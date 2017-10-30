@@ -54,15 +54,15 @@ def login_screen(username,password):
 
     return (username,password)
 
-def main():
-    username=""
-    password=""
-    lg_in=[]
-    lg_in.append(login_screen(username,password))
+#def main():
+#    username=""
+#    password=""
+#    lg_in=[]
+#    lg_in.append(login_screen(username,password))
     
     #username=lg_in[0][0]
     #password=lg_in[0][1]    
     #print(username,password)
     return 0
 
-main()
+#main()
