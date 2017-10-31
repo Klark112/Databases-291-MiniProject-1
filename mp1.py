@@ -2,8 +2,10 @@ import sqlite3
 import tkinter as tk
 from tkinter import messagebox
 
+DATABASE = 'mp1.db'
+
 def log_in(username,password): #NOTE: username and password are currently blank
-    conn = sqlite3.connect('mp1.db')
+    conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute(" SELECT cid FROM customers WHERE customers.cid=:un",{"un":username})
     result = c.fetchone()
@@ -33,6 +35,33 @@ def log_in(username,password): #NOTE: username and password are currently blank
     return False
 
 
+def agent_log_in(username, password):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute(" SELECT aid FROM agents WHERE agents.aid=:un", {"un": username})
+    result = c.fetchone()
+    try:
+        if (result[0] == username):
+            c.execute(" SELECT aid, pwd FROM agents WHERE agents.pwd=:pw AND agents.aid=:un",
+                      {"pw": password, "un": username})
+            result = c.fetchone()
+            print(result[1])
+            if (result[1] == password):
+                conn.commit()
+                conn.close()
+                return True
+            else:
+                messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+                conn.commit()
+                conn.close()
+                return False
+        else:
+            messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+            conn.commit()  # NOTE: I don't think we need this commit statement since we aren't changing anything
+            conn.close()
+            return False
+    except TypeError:
+        messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
 
 
 def sign_up(username,password): #customer(cid, name, address, pwd)

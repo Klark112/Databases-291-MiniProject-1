@@ -25,7 +25,7 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, DashBoard, Register]
+        frame_list = [StartPage, DashBoard, Register, AgentLogin]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -45,7 +45,7 @@ class StartPage(tk.Frame):
         label = ttk.Label(self, text="Login", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        userLabel= ttk.Label(self, text="Username")
+        userLabel= ttk.Label(self, text="UserID")
         userLabel.pack()
         userInfo = Entry(self)
         userInfo.pack()
@@ -57,17 +57,25 @@ class StartPage(tk.Frame):
         loginButton = ttk.Button(self, text="Login",
                              command=lambda: self.LoginCheck(controller,userInfo.get(),passInfo.get()))
         loginButton.pack()
-        button2 = ttk.Button(self, text="Register",
+
+        registerButton = ttk.Button(self, text="Register",
                              command=lambda: controller.show_frame(Register))
-        button2.pack()
+        registerButton.pack()
+
+        agentButton = ttk.Button(self, text="Agent?",
+                             command=lambda: controller.show_frame(AgentLogin))
+        agentButton.pack()
+
+        quitButton = ttk.Button(self, text="Quit",
+                             command= quit)
+        quitButton.pack()
 
     def LoginCheck(self, controller,username, password):
         if(log_in(username, password) == True):
             controller.show_frame(DashBoard)
 
 
-
-# Main User
+# User-Specific dashboard after successful login
 class DashBoard(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -88,5 +96,34 @@ class Register(tk.Frame):
         button1 = ttk.Button(self, text="Cancel",
                              command=lambda: controller.show_frame(StartPage))
         button1.pack()
+
+# Login page for agents
+class AgentLogin(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Login", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+        userLabel = ttk.Label(self, text="AgentID")
+        userLabel.pack()
+        userInfo = Entry(self)
+        userInfo.pack()
+        passLabel = ttk.Label(self, text="Password")
+        passLabel.pack()
+        passInfo = Entry(self, show="*")
+        passInfo.pack()
+
+        loginButton = ttk.Button(self, text="Login",
+                                 command=lambda: self.AgentLoginCheck(controller, userInfo.get(), passInfo.get()))
+        loginButton.pack()
+
+
+        button1 = ttk.Button(self, text="Return",
+                             command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+    def AgentLoginCheck(self, controller,username, password):
+        if(agent_log_in(username, password) == True):
+            controller.show_frame(DashBoard)
+
 
 main()
