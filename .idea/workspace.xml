@@ -14,23 +14,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
-      <file leaf-file-name="mp1.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="mp1.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mp1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="525">
-              <caret line="93" column="21" lean-forward="true" selection-start-line="93" selection-start-column="21" selection-end-line="93" selection-end-column="21" />
+            <state relative-caret-position="-425">
+              <caret line="1" column="58" lean-forward="false" selection-start-line="1" selection-start-column="58" selection-end-line="1" selection-end-column="58" />
               <folding>
-                <element signature="e#0#14#0" expanded="true" />
+                <element signature="e#110#124#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mp1_app.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="mp1_app.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mp1_app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1100">
-              <caret line="125" column="82" lean-forward="true" selection-start-line="125" selection-start-column="82" selection-end-line="125" selection-end-column="82" />
+            <state relative-caret-position="975">
+              <caret line="132" column="0" lean-forward="true" selection-start-line="132" selection-start-column="0" selection-end-line="132" selection-end-column="0" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -41,8 +41,8 @@
       <file leaf-file-name="mp1-tables.sql" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mp1-tables.sql">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="25">
-              <caret line="15" column="8" lean-forward="false" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="8" />
+            <state relative-caret-position="675">
+              <caret line="45" column="21" lean-forward="true" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -235,7 +235,7 @@
         <state relative-caret-position="50">
           <caret line="2" column="12" lean-forward="false" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#110#124#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -271,7 +271,7 @@
         <state relative-caret-position="50">
           <caret line="2" column="12" lean-forward="false" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#110#124#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -307,7 +307,7 @@
         <state relative-caret-position="1475">
           <caret line="59" column="12" lean-forward="false" selection-start-line="59" selection-start-column="12" selection-end-line="59" selection-end-column="12" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#110#124#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -336,14 +336,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py" />
     <entry file="file://$PROJECT_DIR$/mp1_dashboard.py" />
-    <entry file="file://$PROJECT_DIR$/mp1-tables.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="25">
-          <caret line="15" column="8" lean-forward="false" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/mp1-data.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -352,22 +344,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mp1_app.py">
+    <entry file="file://$PROJECT_DIR$/mp1-tables.sql">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1100">
-          <caret line="125" column="82" lean-forward="true" selection-start-line="125" selection-start-column="82" selection-end-line="125" selection-end-column="82" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="675">
+          <caret line="45" column="21" lean-forward="true" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mp1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="93" column="21" lean-forward="true" selection-start-line="93" selection-start-column="21" selection-end-line="93" selection-end-column="21" />
+        <state relative-caret-position="-425">
+          <caret line="1" column="58" lean-forward="false" selection-start-line="1" selection-start-column="58" selection-end-line="1" selection-end-column="58" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#110#124#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mp1_app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="975">
+          <caret line="132" column="0" lean-forward="true" selection-start-line="132" selection-start-column="0" selection-end-line="132" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
           </folding>
         </state>
       </provider>

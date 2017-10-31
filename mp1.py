@@ -1,3 +1,6 @@
+# Back end File for CMPUT 291, Mini-Project 1 App
+# Group members: Justin Daza, Klark Bliss, Siddhart Khanna
+
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox
@@ -94,17 +97,3 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd) #TODO: f
         conn.commit()
         conn.close()
         print("error")
-
-
-#def main():
-#    username=""
-#    password=""
-#    lg_in=[]
-#    lg_in.append(login_screen(username,password))
-    
-    #username=lg_in[0][0]
-    #password=lg_in[0][1]    
-    #print(username,password)
-#    return 0
-
-#main()

@@ -66,9 +66,11 @@ class StartPage(tk.Frame):
         quitButton.pack()
 
     def LoginCheck(self, controller,username, password):
-        if(log_in(username, password) == True):
-            controller.show_frame(UserDashBoard)
-
+        if re.match("^[A-Za-z0-9_]*$", username) and re.match("^[A-Za-z0-9_]*$", password):
+            if(log_in(username, password) == True):
+                controller.show_frame(UserDashBoard)
+        else:
+            messagebox.showerror("Problem", "Invalid characters")
 
 # User-Specific dashboard after successful login
 class UserDashBoard(tk.Frame):
@@ -118,12 +120,15 @@ class Register(tk.Frame):
         cancelButton.pack()
 
     def registerUser(self,controller, uID, name, address, password,conpass):
-        if(conpass == password):
-            if (sign_up(uID, name, address, password) == True):
-                messagebox.showinfo("Successful Registration")
-                controller.show_frame(StartPage)
+        if re.match("^[A-Za-z0-9_]*$", uID) and re.match("^[A-Za-z0-9_]*$", password):
+            if(conpass == password):
+                if (sign_up(uID, name, address, password) == True):
+                    messagebox.showinfo("Successful Registration")
+                    controller.show_frame(StartPage)
+            else:
+                messagebox.showerror("Problem","The passwords you entered must match.")
         else:
-            messagebox.showinfo("Problem","The passwords you entered must match.")
+            messagebox.showerror("Problem", "Username or Password contains invalid characters")
 
 
 
