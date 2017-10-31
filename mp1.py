@@ -1,34 +1,47 @@
 import sqlite3
+import tkinter as tk
+from tkinter import messagebox
 
-def log_in(username,password): #NOTE: username and password are currently blank    
-    conn= sqlite3.connect('./mp1.db')      
-    c=conn.cursor()
-    
-    check=c.execute(" SELECT cid FROM customer WHERE customer.name=:un",{"un":username})
-    if(check!=username):
-        print("Sorry but that user does not exist")
-        conn.commit() #NOTE: I don't think we need this commit statement since we aren't changing anything
-        conn.close()
-        return False
-    
-    check=c.execute(" SELECT pwd FROM customer WHERE customer.pwd=:pw",{"pw":password})
-    if(check!=password): #TODO: should probably change the message printed for security reasons
-        print("Sorry but that password is incorrect")
-        conn.commit()
-        conn.close()        
-        return False
-    
-    conn.commit()
-    conn.close()    
-    return True
+def log_in(username,password): #NOTE: username and password are currently blank
+    conn = sqlite3.connect('mp1.db')
+    c = conn.cursor()
+    c.execute(" SELECT cid FROM customers WHERE customers.cid=:un",{"un":username})
+    result = c.fetchone()
+    try:
+        if(result[0] == username):
+            c.execute(" SELECT cid, pwd FROM customers WHERE customers.pwd=:pw AND customers.cid=:un", {"pw": password, "un": username})
+            result = c.fetchone()
+            print(result[1])
+            if(result[1] == password):
+                conn.commit()
+                conn.close()
+                return True
+            else:
+                messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+                conn.commit()
+                conn.close()
+                return False
+        else:
+            messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+            conn.commit() #NOTE: I don't think we need this commit statement since we aren't changing anything
+            conn.close()
+            return False
+    except TypeError:
+        messagebox.showinfo("Invalid Login","The username or password you entered is incorrect." )
+
+
+    return False
+
+
+
 
 def sign_up(username,password): #customer(cid, name, address, pwd)
     i_cid=input("\nPlease enter a Username: ")
     i_name=input("\n Please enter your Full name: ")
     i_address=input("\n Please enter your address: ")
     i_pwd=input("\n Please enter your password: ") #TODO:have to hide this value while it is being typed
-    
-    conn= sqlite3.connect('./mp1.db')      
+
+    conn= sqlite3.connect('./mp1.db')
     c=conn.cursor()    
     c.execute(" INSERT INTO customers(cid, name, address, pwd) VALUES (i_cid, i_name, i_address,i_pwd) ") #TODO: incomplete SQL INSERT
     return True
@@ -63,6 +76,6 @@ def login_screen(username,password):
     #username=lg_in[0][0]
     #password=lg_in[0][1]    
     #print(username,password)
-    return 0
+#    return 0
 
 #main()

@@ -72,6 +72,7 @@ class DashBoard(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Dashboard", font=LARGE_FONT)
+
         label.pack(pady=10, padx=10)
         button1 = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
