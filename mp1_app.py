@@ -103,20 +103,28 @@ class Register(tk.Frame):
         addressInfo.pack()
         passwordLabel = ttk.Label(self, text="Enter password")
         passwordLabel.pack()
-        passwordInfo = Entry(self)
+        passwordInfo = Entry(self, show='*')
         passwordInfo.pack()
+        conpasswordLabel = ttk.Label(self, text="Confirm Password")
+        conpasswordLabel.pack()
+        conpasswordInfo = Entry(self, show='*')
+        conpasswordInfo.pack()
 
         registerButton =  ttk.Button(self, text="Register",
-                             command=lambda: self.registerUser(controller,uIDInfo.get(),nameInfo.get(),addressInfo.get(),passwordInfo.get()))
+                             command=lambda: self.registerUser(controller,uIDInfo.get(),nameInfo.get(),addressInfo.get(),passwordInfo.get(),conpasswordInfo.get()))
         registerButton.pack()
         cancelButton = ttk.Button(self, text="Cancel",
                              command=lambda: controller.show_frame(StartPage))
         cancelButton.pack()
 
-    def registerUser(self,controller, uID, name, address, password):
-        if(sign_up(uID,name,address,password)==True):
-            messagebox.showinfo("Successful Registration")
-            controller.show_frame(StartPage)
+    def registerUser(self,controller, uID, name, address, password,conpass):
+        if(conpass == password):
+            if (sign_up(uID, name, address, password) == True):
+                messagebox.showinfo("Successful Registration")
+                controller.show_frame(StartPage)
+        else:
+            messagebox.showinfo("Problem","The passwords you entered must match.")
+
 
 
 # Login page for agents

@@ -84,11 +84,11 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd) #TODO: f
         conn.commit()
         conn.close()
         return(True)
-    except sqlite3.ProgrammingError:
-        conn.rollback()
-        conn.commit()
-        conn.close()
-        messagebox.showinfo("Error", "Invalid Registration Info. ID may have already been taken")
+   # except sqlite3.ProgrammingError:
+   #     conn.rollback()
+   #     conn.commit()
+   #     conn.close()
+   #     messagebox.showinfo("Error", "Invalid Registration Info. ID may have already been taken")
     except :
         conn.rollback()
         conn.commit()
