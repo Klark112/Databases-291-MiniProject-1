@@ -6,11 +6,6 @@ from mp1 import *
 LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 12)
 
-def main():
-    app = MiniProjectapp()
-    app.geometry("270x480")
-    app.mainloop()
-
 
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -25,7 +20,7 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, DashBoard, Register, AgentLogin]
+        frame_list = [StartPage, UserDashBoard, Register, AgentLogin]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -72,16 +67,16 @@ class StartPage(tk.Frame):
 
     def LoginCheck(self, controller,username, password):
         if(log_in(username, password) == True):
-            controller.show_frame(DashBoard)
+            controller.show_frame(UserDashBoard)
 
 
 # User-Specific dashboard after successful login
-class DashBoard(tk.Frame):
+class UserDashBoard(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Dashboard", font=LARGE_FONT)
-
+        label = tk.Label(self, text="Welcome", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
+
         button1 = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
         button1.pack()
@@ -93,9 +88,36 @@ class Register(tk.Frame):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Register", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
-        button1 = ttk.Button(self, text="Cancel",
+
+        uIDLabel = ttk.Label(self, text="Enter ID")
+        uIDLabel.pack()
+        uIDInfo = Entry(self)
+        uIDInfo.pack()
+        nameLabel = ttk.Label(self, text="Enter name")
+        nameLabel.pack()
+        nameInfo = Entry(self)
+        nameInfo.pack()
+        addressLabel = ttk.Label(self, text="Enter address")
+        addressLabel.pack()
+        addressInfo = Entry(self)
+        addressInfo.pack()
+        passwordLabel = ttk.Label(self, text="Enter password")
+        passwordLabel.pack()
+        passwordInfo = Entry(self)
+        passwordInfo.pack()
+
+        registerButton =  ttk.Button(self, text="Register",
+                             command=lambda: self.registerUser(controller,uIDInfo.get(),nameInfo.get(),addressInfo.get(),passwordInfo.get()))
+        registerButton.pack()
+        cancelButton = ttk.Button(self, text="Cancel",
                              command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        cancelButton.pack()
+
+    def registerUser(self,controller, uID, name, address, password):
+        if(sign_up(uID,name,address,password)==True):
+            messagebox.showinfo("Successful Registration")
+            controller.show_frame(StartPage)
+
 
 # Login page for agents
 class AgentLogin(tk.Frame):
@@ -123,7 +145,10 @@ class AgentLogin(tk.Frame):
 
     def AgentLoginCheck(self, controller,username, password):
         if(agent_log_in(username, password) == True):
-            controller.show_frame(DashBoard)
+            controller.show_frame(UserDashBoard)
 
 
-main()
+if __name__ == "__main__":
+    app = MiniProjectapp()
+    app.geometry("270x480")
+    app.mainloop()
