@@ -79,20 +79,20 @@ def setUser(username):
 def getUser():
     return user
 
-def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd) #TODO: fix insert customer query
+def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd) 
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     try:
-        c.execute(""" INSERT INTO customers(cid, name, address, pwd) VALUES ('%s', '%s', '%s','%s')""", (cid,name,address,pwd))
+        c.execute(""" INSERT INTO customers(cid, name, address, pwd) VALUES (?, ?, ?, ?)""", (cid,name,address,pwd))
         conn.commit()
         conn.close()
         return(True)
-   # except sqlite3.ProgrammingError:
-   #     conn.rollback()
-   #     conn.commit()
-   #     conn.close()
-   #     messagebox.showinfo("Error", "Invalid Registration Info. ID may have already been taken")
-    except :
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        conn.commit()
+        conn.close()
+        messagebox.showerror("Invalid ID", "Invalid Registration Info. ID may have already been taken")
+    except:
         conn.rollback()
         conn.commit()
         conn.close()

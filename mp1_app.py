@@ -123,7 +123,7 @@ class Register(tk.Frame):
         if re.match("^[A-Za-z0-9_]*$", uID) and re.match("^[A-Za-z0-9_]*$", password):
             if(conpass == password):
                 if (sign_up(uID, name, address, password) == True):
-                    messagebox.showinfo("Successful Registration")
+                    messagebox._show("Success","You have successfully registered your account!")
                     controller.show_frame(StartPage)
             else:
                 messagebox.showerror("Problem","The passwords you entered must match.")
