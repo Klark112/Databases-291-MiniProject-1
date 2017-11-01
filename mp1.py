@@ -1,5 +1,6 @@
 # Back end File for CMPUT 291, Mini-Project 1 App
 # Group members: Justin Daza, Klark Bliss, Siddhart Khanna
+# This file contains backend for login/registration for agents and regular clients
 
 import sqlite3
 import tkinter as tk
@@ -79,7 +80,7 @@ def setUser(username):
 def getUser():
     return user
 
-def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd) 
+def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     try:
@@ -92,8 +93,10 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
         conn.commit()
         conn.close()
         messagebox.showerror("Invalid ID", "Invalid Registration Info. ID may have already been taken")
-    except:
+    except Exception as ex:
         conn.rollback()
         conn.commit()
         conn.close()
-        print("error")
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        messagebox.showerror("Signup error", message)

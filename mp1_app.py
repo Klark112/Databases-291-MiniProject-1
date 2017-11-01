@@ -1,10 +1,15 @@
+#CMPUT 291 Mini Project 1
+#Group Members: Justin Daza. Klark Bliss, Siddhart Khanna
+#Project GUI main code to run our application
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from mp1 import *
+from mp1_models import *
 
 LARGE_FONT = ("Veranda", 18)
-SMALL_FONT = ("Veranda", 12)
+SMALL_FONT = ("Veranda", 9)
 
 
 class MiniProjectapp(tk.Tk):
@@ -20,7 +25,7 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, UserDashBoard, Register, AgentLogin]
+        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -40,11 +45,11 @@ class StartPage(tk.Frame):
         label = ttk.Label(self, text="Login", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        userLabel= ttk.Label(self, text="UserID")
+        userLabel= ttk.Label(self, text="UserID",font=SMALL_FONT)
         userLabel.pack()
         userInfo = Entry(self)
         userInfo.pack()
-        passLabel = ttk.Label(self, text="Password")
+        passLabel = ttk.Label(self, text="Password",font=SMALL_FONT)
         passLabel.pack()
         passInfo = Entry(self, show="*")
         passInfo.pack()
@@ -72,16 +77,38 @@ class StartPage(tk.Frame):
         else:
             messagebox.showerror("Problem", "Invalid characters")
 
-# User-Specific dashboard after successful login
+# User Dashboard after successful login
 class UserDashBoard(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Welcome", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        button1 = ttk.Button(self, text="Logout",
+        Button1 = ttk.Button(self, text="Setup Delivery",
+                             command=lambda: self.SearchForProducts())
+        Button1.pack()
+        Button2 = ttk.Button(self, text="Update Delivery",
+                             command=lambda: self.PlaceAnOrder())
+        Button2.pack()
+        Button3 = ttk.Button(self, text="Add to Stocks",
+                             command=lambda: self.ListOrders())
+        Button3.pack()
+        logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        logoutButton.pack()
+
+    def SearchForProducts(self):
+        print("1")
+        return
+
+    def PlaceAnOrder(self):
+        print("2")
+        return
+
+    def ListOrders(self):
+        print("3")
+        return
+
 
 
 # Registration Page for Regular Users
@@ -91,23 +118,23 @@ class Register(tk.Frame):
         label = tk.Label(self, text="Register", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        uIDLabel = ttk.Label(self, text="Enter ID")
+        uIDLabel = ttk.Label(self, text="Enter ID",font=SMALL_FONT)
         uIDLabel.pack()
         uIDInfo = Entry(self)
         uIDInfo.pack()
-        nameLabel = ttk.Label(self, text="Enter name")
+        nameLabel = ttk.Label(self, text="Enter name",font=SMALL_FONT)
         nameLabel.pack()
         nameInfo = Entry(self)
         nameInfo.pack()
-        addressLabel = ttk.Label(self, text="Enter address")
+        addressLabel = ttk.Label(self, text="Enter address",font=SMALL_FONT)
         addressLabel.pack()
         addressInfo = Entry(self)
         addressInfo.pack()
-        passwordLabel = ttk.Label(self, text="Enter password")
+        passwordLabel = ttk.Label(self, text="Enter password",font=SMALL_FONT)
         passwordLabel.pack()
         passwordInfo = Entry(self, show='*')
         passwordInfo.pack()
-        conpasswordLabel = ttk.Label(self, text="Confirm Password")
+        conpasswordLabel = ttk.Label(self, text="Confirm Password",font=SMALL_FONT)
         conpasswordLabel.pack()
         conpasswordInfo = Entry(self, show='*')
         conpasswordInfo.pack()
@@ -126,9 +153,9 @@ class Register(tk.Frame):
                     messagebox._show("Success","You have successfully registered your account!")
                     controller.show_frame(StartPage)
             else:
-                messagebox.showerror("Problem","The passwords you entered must match.")
+                messagebox.showerror("Different passwords","The passwords you entered must match.")
         else:
-            messagebox.showerror("Problem", "Username or Password contains invalid characters")
+            messagebox.showerror("Invalid ID", "Username or Password contains invalid characters")
 
 
 
@@ -138,11 +165,11 @@ class AgentLogin(tk.Frame):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Login", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
-        userLabel = ttk.Label(self, text="AgentID")
+        userLabel = ttk.Label(self, text="AgentID",font=SMALL_FONT)
         userLabel.pack()
         userInfo = Entry(self)
         userInfo.pack()
-        passLabel = ttk.Label(self, text="Password")
+        passLabel = ttk.Label(self, text="Password",font=SMALL_FONT)
         passLabel.pack()
         passInfo = Entry(self, show="*")
         passInfo.pack()
@@ -157,8 +184,42 @@ class AgentLogin(tk.Frame):
         button1.pack()
 
     def AgentLoginCheck(self, controller,username, password):
-        if(agent_log_in(username, password) == True):
-            controller.show_frame(UserDashBoard)
+        if re.match("^[A-Za-z0-9_]*$", username) and re.match("^[A-Za-z0-9_]*$", password):
+            if(agent_log_in(username, password) == True):
+                controller.show_frame(AgentDashBoard)
+        else:
+            messagebox.showerror("Invalid ID", "Username or Password contains invalid characters")
+
+#Dashboard for agents, containing all the actions that agents can perform
+class AgentDashBoard(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="AgentDashboard", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+        Button1 = ttk.Button(self, text="Setup Delivery",
+                                 command=lambda: self.SetUpDelivery())
+        Button1.pack()
+        Button2 = ttk.Button(self, text="Update Delivery",
+                             command=lambda: self.UpdateDelivery())
+        Button2.pack()
+        Button3 = ttk.Button(self, text="Add to Stocks",
+                             command=lambda: self.AddToStock())
+        Button3.pack()
+        logoutButton = ttk.Button(self, text="Logout",
+                             command=lambda: controller.show_frame(StartPage))
+        logoutButton.pack()
+    def SetUpDelivery(self):
+        print("1")
+        return
+
+    def UpdateDelivery(self):
+        print("2")
+        return
+
+    def AddToStock(self):
+        print("3")
+        return
 
 
 if __name__ == "__main__":
