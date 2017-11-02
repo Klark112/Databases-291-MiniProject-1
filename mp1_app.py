@@ -84,13 +84,13 @@ class UserDashBoard(tk.Frame):
         label = tk.Label(self, text="Welcome", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        Button1 = ttk.Button(self, text="Setup Delivery",
+        Button1 = ttk.Button(self, text="Search for products",
                              command=lambda: self.SearchForProducts())
         Button1.pack()
-        Button2 = ttk.Button(self, text="Update Delivery",
+        Button2 = ttk.Button(self, text="Place an order",
                              command=lambda: self.PlaceAnOrder())
         Button2.pack()
-        Button3 = ttk.Button(self, text="Add to Stocks",
+        Button3 = ttk.Button(self, text="List orders",
                              command=lambda: self.ListOrders())
         Button3.pack()
         logoutButton = ttk.Button(self, text="Logout",
@@ -218,8 +218,14 @@ class AgentDashBoard(tk.Frame):
         return
 
     def AddToStock(self):
+        #Do stuff here
+        #When click this go to another page -> ask for sid, pid, qty to change
+        
+        #then update that
+        #then display change
         print("3")
         return
+
 
 
 if __name__ == "__main__":
