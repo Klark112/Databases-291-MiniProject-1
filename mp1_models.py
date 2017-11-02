@@ -9,32 +9,102 @@ from mp1 import *
 import uuid
 import datetime
 
+DATABASE = 'mp1.db'
+
+# General back-end function to return # of rows in a table
+def getTableSize(table):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    query = {'deliveries':" SELECT COUNT(*) FROM deliveries",
+        'agents': " SELECT COUNT(*) FROM agents",
+        'stores':" SELECT COUNT(*) FROM stores",
+        'categories': " SELECT COUNT(*) FROM categories",
+        'products': " SELECT COUNT(*) FROM products",
+        'carries':" SELECT COUNT(*) FROM carries",
+        'customers':" SELECT COUNT(*) FROM customers",
+        'orders':" SELECT COUNT(*) FROM orders",
+        'olines':" SELECT COUNT(*) FROM olines",
+         }[table]
+    c.execute(query)
+    result = c.fetchone()
+    conn.commit()
+    conn.close()
+    return result[0]
+
 class Delivery():
-    #__trackingNumList ={} # Used to identify if tracking number is unique?
-    __ID = getTableSize("deliveries") + 1
+    trackingNumList =[] # Used to identify if tracking number is unique?
     def __init__(self,pickupTime = None, orders= []):
-        self.id =self.__ID
-        self.__class__.__ID += 1
         self.orders = orders
-        self.trackingNum = uuid.uuid4().int & (1<<12)-1
+        self.trackingNum = lambda: self.generateTrackNumber()
         self.pickUpTime = pickupTime
-        self.dropOffTIme = None
+        self.dropOffTime = None
 
-    def addOrders(self, newOrders):
-        self.orders+=newOrders
+    def generateTrackNumber(self): # generates a unique tracking number
+        i=True
+        while i:
+            num = uuid.uuid4().int & (1<<12)-1
+            if num not in self.trackingNumList:
+                i = False
+        return num
+    def getTrackingNum(self):
+        return self.trackingNum
+
+    def addOrders(self, newOrders): # add set of oids to the delivery orders and add new rows to the database
+        self.orders += newOrders
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        for oid in newOrders:
+            # Insert a row for each Order
+            c.execute("""INSERT INTO deliveries(trackingNo, oid, pickUpTime, dropOffTime) VALUES(?, ?, ?, ?) """,
+                      (self.trackingNum,oid,self.pickUpTime, self.dropOffTime))
+        conn.commit()
+        conn.close()
+    
+    def getOrders(self):    #return list of orders associated to the current trackingNum
+        return self.orders
+
+    def storeDelivery(self):   # for every order added to this delivery, insert new row into data table
+
+        if self.trackingNum not in self.trackingNumList:
+            self.trackingNumList.append(self.trackingNum)
         return
 
-    def getOrders(self):
+    def updateTimes(self, trackingNum, oID, pickUpTime, dropOffTime):   #Updates pickUp
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("UPDATE deliveries SET pickUpTime = :pt, dropOffTime = :dt WHERE trackingNo = :tn AND oID = :id",
+                      {"pt":pickUpTime,"dt":dropOffTime,"tn":trackingNum,"id":oID})
+            conn.commit()
+            conn.close()
+        except:
+            print("Error updating delivery times")
+
+    def getDelivery(self, trackingNum):  # Function retrieves data related to trackingNum
+        try:
+            self.trackingNum = trackingNum
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT pickUpTime, dropOffTime FROM deliveries WHERE trackingNo = :id", {"id": trackingNum})
+            result = c.fetchone()
+            self.pickUpTime = result[0]
+            self.dropOffTime = result[1]
+
+            orderlist = []
+            c.execute("SELECT oid FROM deliveries WHERE trackingNo = :id",{"id": trackingNum})
+            result = c.fetchall()
+            for i in result:
+                orderlist.append(i)
+            self.orders = orderlist
+            conn.commit()
+            conn.close()
+
+        except: #TODO: Print message saying trackingNum does not exist
+            print("ERROR getting deliveries")
+
+    def removeOrder(self,oID):
         return
 
-    def setDelivery(self):
-        return
-
-    def updateDelivery(self,trackingNum):
-        return
-
-    def getDelivery(self, ID):
-        return
 
 class Oline():
     def __init__(self, oID,sID,pID,qty=0,uprice=0):
@@ -73,20 +143,41 @@ class Order():
         self.address = address
         self.date = datetime.now()
 
+    def retrieveOrder(self, ID):   # Update all self values to match the one from the database and return OID
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT oid, cid, address, date FROM orders WHERE oid = :id", {"id": ID})
+            result = c.fetchone()
+            self.oID = result[0]
+            self.cID = result[1]
+            self.address = result[2]
+            self.date = result[3]
+            conn.commit()
+            conn.close()
+
+        except: #TODO: Print message saying order id does not exist
+            print("ERROR with retrieveOrder")
+
     def getOID(self):
         return self.oID
 
-    def getCID(self):
+    def getCID(self):   # Return customer ID of current order
         return self.cID
 
-    def getAddress(self):
+    def getAddress(self): # Return address of current order
         return self.address
 
-    def getOrderDate(self):
+    def getOrderDate(self): # Return date current order was made
         return self.date
 
-    def updateAddress(self, newAddress):
+    def updateAddress(self, newAddress):    #Update address of current Order
         self.address = newAddress
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("UPDATE orders SET address = :ad WHERE oid = :id",{"ad":newAddress,"id":self.oID})
+        conn.commit()
+        conn.close()
 
 
 class Customer():
@@ -133,12 +224,4 @@ class Category():
         self.cat = cat
         self.name = name
 
-    
 
-# Global function to returns size of specified db
-def getTableSize(table):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute(" SELECT COUNT(*) FROM :tb ",
-              {"tb":table})
-    return c.fetchone()

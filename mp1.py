@@ -5,10 +5,12 @@
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox
+from mp1_app import *
+from mp1_models import *
 
 DATABASE = 'mp1.db'
 # global variable for backend to keep track of user
-user = ""
+USER = ""
 
 def log_in(username,password): #NOTE: username and password are currently blank
     conn = sqlite3.connect(DATABASE)
@@ -74,11 +76,12 @@ def agent_log_in(username, password):
 
 
 def setUser(username):
-    global user
-    user = username
+    global USER
+    USER = username
 
 def getUser():
-    return user
+    global USER
+    return USER
 
 def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
     conn = sqlite3.connect(DATABASE)
