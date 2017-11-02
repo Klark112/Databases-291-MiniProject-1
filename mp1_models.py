@@ -1,6 +1,6 @@
 # Back end File for CMPUT 291, Mini-Project 1 App
 # Group members: Justin Daza, Klark Bliss, Siddhart Khanna
-# File contains funtions that support actions that Agents can take
+# File contains back-end functions and Models for the data schema
 
 import sqlite3
 import tkinter as tk

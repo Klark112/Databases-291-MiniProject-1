@@ -1,6 +1,6 @@
 # Back end File for CMPUT 291, Mini-Project 1 App
 # Group members: Justin Daza, Klark Bliss, Siddhart Khanna
-# This file contains backend for login/registration for agents and regular clients
+# This file contains GUI functions
 
 import sqlite3
 import tkinter as tk
