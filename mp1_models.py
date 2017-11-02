@@ -10,7 +10,8 @@ import uuid
 import datetime
 
 DATABASE = 'mp1.db'
-
+########################################################################################################################
+# FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # General back-end function to return # of rows in a table
 def getTableSize(table):
     conn = sqlite3.connect(DATABASE)
@@ -31,21 +32,28 @@ def getTableSize(table):
     conn.close()
     return result[0]
 
+
+########################################################################################################################
+# CLASSES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Model Classes for database tables
+
+
 class Delivery():
-    trackingNumList =[] # Used to identify if tracking number is unique?
+    trackingNumList =[] # Used to identify if tracking number is unique
     def __init__(self,pickupTime = None, orders= []):
         self.orders = orders
-        self.trackingNum = lambda: self.generateTrackNumber()
+        self.trackingNum = self.generateTrackNumber()
         self.pickUpTime = pickupTime
         self.dropOffTime = None
 
     def generateTrackNumber(self): # generates a unique tracking number
-        i=True
+        i = True
         while i:
             num = uuid.uuid4().int & (1<<12)-1
             if num not in self.trackingNumList:
                 i = False
         return num
+
     def getTrackingNum(self):
         return self.trackingNum
 
@@ -59,15 +67,26 @@ class Delivery():
                       (self.trackingNum,oid,self.pickUpTime, self.dropOffTime))
         conn.commit()
         conn.close()
-    
+
     def getOrders(self):    #return list of orders associated to the current trackingNum
         return self.orders
 
-    def storeDelivery(self):   # for every order added to this delivery, insert new row into data table
-
-        if self.trackingNum not in self.trackingNumList:
-            self.trackingNumList.append(self.trackingNum)
-        return
+    def saveDelivery(self):   # for every order added to this delivery, insert new row into data table
+        try:
+            if self.trackingNum not in self.trackingNumList:
+                self.trackingNumList.append(self.trackingNum)
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            for oid in self.orders:
+                c.execute("""INSERT INTO deliveries(trackingNo, oid, pickUpTime, dropOffTime) VALUES(?, ?, ?, ?) """,
+                          (self.trackingNum, oid, self.pickUpTime, self.dropOffTime))
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            print("Error saving new delivery")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
     def updateTimes(self, trackingNum, oID, pickUpTime, dropOffTime):   #Updates pickUp
         try:
@@ -77,8 +96,11 @@ class Delivery():
                       {"pt":pickUpTime,"dt":dropOffTime,"tn":trackingNum,"id":oID})
             conn.commit()
             conn.close()
-        except:
+        except Exception as ex:
             print("Error updating delivery times")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
     def getDelivery(self, trackingNum):  # Function retrieves data related to trackingNum
         try:
@@ -99,11 +121,27 @@ class Delivery():
             conn.commit()
             conn.close()
 
-        except: #TODO: Print message saying trackingNum does not exist
+        except Exception as ex: #TODO: Print message saying trackingNum does not exist
             print("ERROR getting deliveries")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
     def removeOrder(self,oID):
-        return
+        try:
+            self.orders.remove(oID)
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("DELETE FROM deliveries WHERE trackingNo = :tn AND oid = :id",
+                      {"tn":self.trackingNum, "id":oID})
+            conn.commit()
+            conn.close()
+
+        except Exception as ex:
+            print("ERROR removing orders")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
 
 class Oline():
@@ -135,6 +173,7 @@ class Oline():
     def getQty(self):
         return self.qty
 
+
 class Order():
     __ID = getTableSize("orders") + 1
     def __init(self,cid,address):
@@ -156,8 +195,10 @@ class Order():
             conn.commit()
             conn.close()
 
-        except: #TODO: Print message saying order id does not exist
+        except Exception as ex: #TODO: Print message saying order id does not exist
             print("ERROR with retrieveOrder")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
 
     def getOID(self):
         return self.oID
@@ -175,10 +216,14 @@ class Order():
         self.address = newAddress
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
-        c.execute("UPDATE orders SET address = :ad WHERE oid = :id",{"ad":newAddress,"id":self.oID})
-        conn.commit()
-        conn.close()
-
+        try:
+            c.execute("UPDATE orders SET address = :ad WHERE oid = :id",{"ad":newAddress,"id":self.oID})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            print("Error updating order address")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
 
 class Customer():
     def __init__(self,cid, name, address, pwd):

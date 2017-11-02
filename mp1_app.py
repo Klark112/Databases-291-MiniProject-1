@@ -226,3 +226,5 @@ if __name__ == "__main__":
     app = MiniProjectapp()
     app.geometry("270x480")
     app.mainloop()
+
+
