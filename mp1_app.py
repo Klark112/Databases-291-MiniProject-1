@@ -25,7 +25,7 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard]
+        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -206,7 +206,7 @@ class AgentDashBoard(tk.Frame):
                              command=lambda: self.UpdateDelivery())
         Button2.pack()
         Button3 = ttk.Button(self, text="Add to Stocks",
-                             command=lambda: self.AddToStock())
+                             command=lambda: controller.show_frame(Stock))
         Button3.pack()
         logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
@@ -223,11 +223,37 @@ class AgentDashBoard(tk.Frame):
         print("2")
         return
 
-    def AddToStock(self):
-        print("3")
-        return
+class Stock(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)        
+        userLabel= ttk.Label(self, text="Enter Store ID(sid)",font=SMALL_FONT)
+        userLabel.pack()
+        sidInfo = Entry(self)
+        sidInfo.pack()    
+        
+        userLabel= ttk.Label(self, text="Enter Product ID(pid)",font=SMALL_FONT)
+        userLabel.pack()
+        pidInfo = Entry(self)
+        pidInfo.pack()        
+        
+        CheckButton = ttk.Button(self, text="Check",
+                             command=lambda: self.StockCheck(sidInfo.get(), pidInfo.get()))
+        CheckButton.pack()
+        
+    def StockCheck(self, sid, pid):
+        #display quantity button
+        userLabel= ttk.Label(self, text="Enter Qty",font=SMALL_FONT)
+        userLabel.pack()
+        qtyInfo = Entry(self)
+        qtyInfo.pack()                
 
+        qtyButton = ttk.Button(self, text="Quantity", command=lambda: StockQTY(sid,pid, qtyInfo.get()))
+        qtyButton.pack()
+  
+        #StockQTY(sid, pid, qtyInfo.get())
 
+        
+        
 if __name__ == "__main__":
     app = MiniProjectapp()
     app.geometry("270x480")

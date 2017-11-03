@@ -104,6 +104,22 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
         message = template.format(type(ex).__name__, ex.args)
         messagebox.showerror("Signup error", message)
 
+
 def set_up_delivery():
 
     return
+
+def StockQTY(sid, pid, qty):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    #c.execute("""SELECT sid, pid FROM carries WHERE carries.sid=:sd AND carries.pid=:pd""", 
+              #{"sd":sid, "pd":pid})
+    
+    #have the specific store and pid
+    #result = c.fetchone()
+    
+    c.execute("""UPDATE carries SET qty=:qt WHERE sid=:sd AND pid=:pd""",
+              {"qt":qty, "sd":sid, "pd":pid})
+    conn.commit()
+    conn.close()
+
