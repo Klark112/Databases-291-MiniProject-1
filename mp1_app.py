@@ -217,10 +217,6 @@ class AgentDashBoard(tk.Frame):
         print("2")
         return
 
-    def AddToStock(self):
-        print("3")    
-        return
-
 class Stock(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)        
