@@ -245,6 +245,7 @@ class Stock(tk.Frame):
         qtyButton.pack()
   
         #StockQTY(sid, pid, qtyInfo.get())
+
         
         
 if __name__ == "__main__":
