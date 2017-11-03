@@ -115,4 +115,6 @@ def StockQTY(sid, pid, qty):
     
     c.execute("""UPDATE carries SET qty=:qt WHERE sid=:sd AND pid=:pd""",
               {"qt":qty, "sd":sid, "pd":pid})
+    conn.commit()
+    conn.close()
 
