@@ -111,8 +111,10 @@ def Stock(sid, pid):
               {"sd":sid, "pd":pid})
     result = c.fetchone()
     if(result[0]==sid & result[1]==pid):
+        conn.commit()
+        conn.close()
         return True
     else:
+        conn.commit()
+        conn.close()
         return False
-    conn.commit()
-    

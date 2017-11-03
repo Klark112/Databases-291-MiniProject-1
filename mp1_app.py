@@ -217,10 +217,6 @@ class AgentDashBoard(tk.Frame):
         print("2")
         return
 
-    def AddToStock(self):
-        print("3")    
-        return
-
 class Stock(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)        
@@ -235,20 +231,20 @@ class Stock(tk.Frame):
         pidInfo.pack()        
         
         CheckButton = ttk.Button(self, text="Check",
-                             command=lambda: self.StockCheck(controller, sidInfo.get(), pidInfo.get()))
+                             command=lambda: self.StockCheck(sidInfo.get(), pidInfo.get()))
         CheckButton.pack()
         
     def StockCheck(self, sid, pid):
-        if(Stock(sid, pid)==True):
+       # if(Stock2(sid, pid)==True):
             #display quantity button
-            userLabel= ttk.Label(self, text="Enter Qty",font=SMALL_FONT)
-            userLabel.pack()
-            qtyInfo = Entry(self)
-            qtyInfo.pack()                
-            qtyButton = ttk.Button(self, text="Quantity")
-            qtyButton.pack()
-        else:
-            messagebox.showerror("Invalid pid or sid", "Please Enter valid values")
+        userLabel= ttk.Label(self, text="Enter Qty",font=SMALL_FONT)
+        userLabel.pack()
+        qtyInfo = Entry(self)
+        qtyInfo.pack()
+        qtyButton = ttk.Button(self, text="Quantity")
+        qtyButton.pack()
+        #else:
+        #    messagebox.showerror("Invalid pid or sid", "Please Enter valid values")
         
         
 if __name__ == "__main__":
