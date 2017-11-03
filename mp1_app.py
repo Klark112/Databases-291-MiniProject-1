@@ -84,13 +84,13 @@ class UserDashBoard(tk.Frame):
         label = tk.Label(self, text="Welcome", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        Button1 = ttk.Button(self, text="Setup Delivery",
+        Button1 = ttk.Button(self, text="Search Products",
                              command=lambda: self.SearchForProducts())
         Button1.pack()
-        Button2 = ttk.Button(self, text="Update Delivery",
+        Button2 = ttk.Button(self, text="Place an Order",
                              command=lambda: self.PlaceAnOrder())
         Button2.pack()
-        Button3 = ttk.Button(self, text="Add to Stocks",
+        Button3 = ttk.Button(self, text="List Orders",
                              command=lambda: self.ListOrders())
         Button3.pack()
         logoutButton = ttk.Button(self, text="Logout",
@@ -192,6 +192,8 @@ class AgentLogin(tk.Frame):
 
 #Dashboard for agents, containing all the actions that agents can perform
 class AgentDashBoard(tk.Frame):
+
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="AgentDashboard", font=LARGE_FONT)
@@ -210,8 +212,12 @@ class AgentDashBoard(tk.Frame):
                              command=lambda: controller.show_frame(StartPage))
         logoutButton.pack()
     def SetUpDelivery(self):
-        print("1")
-        return
+        agent_root = tk.Tk()
+        setup_window = tk.Toplevel(agent_root)
+
+
+
+        agent_root.mainloop()
 
     def UpdateDelivery(self):
         print("2")

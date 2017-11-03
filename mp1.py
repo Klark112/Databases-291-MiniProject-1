@@ -103,3 +103,7 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args)
         messagebox.showerror("Signup error", message)
+
+def set_up_delivery():
+
+    return
