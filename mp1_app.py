@@ -25,7 +25,7 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard]
+        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -84,13 +84,13 @@ class UserDashBoard(tk.Frame):
         label = tk.Label(self, text="Welcome", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        Button1 = ttk.Button(self, text="Setup Delivery",
+        Button1 = ttk.Button(self, text="Search for products",
                              command=lambda: self.SearchForProducts())
         Button1.pack()
-        Button2 = ttk.Button(self, text="Update Delivery",
+        Button2 = ttk.Button(self, text="Place an order",
                              command=lambda: self.PlaceAnOrder())
         Button2.pack()
-        Button3 = ttk.Button(self, text="Add to Stocks",
+        Button3 = ttk.Button(self, text="List orders",
                              command=lambda: self.ListOrders())
         Button3.pack()
         logoutButton = ttk.Button(self, text="Logout",
@@ -204,7 +204,7 @@ class AgentDashBoard(tk.Frame):
                              command=lambda: self.UpdateDelivery())
         Button2.pack()
         Button3 = ttk.Button(self, text="Add to Stocks",
-                             command=lambda: self.AddToStock())
+                             command=lambda: controller.show_frame(Stock))
         Button3.pack()
         logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
@@ -218,10 +218,39 @@ class AgentDashBoard(tk.Frame):
         return
 
     def AddToStock(self):
-        print("3")
+        print("3")    
         return
 
-
+class Stock(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)        
+        userLabel= ttk.Label(self, text="Enter Store ID(sid)",font=SMALL_FONT)
+        userLabel.pack()
+        sidInfo = Entry(self)
+        sidInfo.pack()    
+        
+        userLabel= ttk.Label(self, text="Enter Product ID(pid)",font=SMALL_FONT)
+        userLabel.pack()
+        pidInfo = Entry(self)
+        pidInfo.pack()        
+        
+        CheckButton = ttk.Button(self, text="Check",
+                             command=lambda: self.StockCheck(controller, sidInfo.get(), pidInfo.get()))
+        CheckButton.pack()
+        
+    def StockCheck(self, sid, pid):
+        if(Stock(sid, pid)==True):
+            #display quantity button
+            userLabel= ttk.Label(self, text="Enter Qty",font=SMALL_FONT)
+            userLabel.pack()
+            qtyInfo = Entry(self)
+            qtyInfo.pack()                
+            qtyButton = ttk.Button(self, text="Quantity")
+            qtyButton.pack()
+        else:
+            messagebox.showerror("Invalid pid or sid", "Please Enter valid values")
+        
+        
 if __name__ == "__main__":
     app = MiniProjectapp()
     app.geometry("270x480")

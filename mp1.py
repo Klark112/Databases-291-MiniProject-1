@@ -103,3 +103,16 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args)
         messagebox.showerror("Signup error", message)
+
+def Stock(sid, pid):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("""SELECT sid, pid FROM carries WHERE carries.sid=:sd AND carries.pid=:pd""", 
+              {"sd":sid, "pd":pid})
+    result = c.fetchone()
+    if(result[0]==sid & result[1]==pid):
+        return True
+    else:
+        return False
+    conn.commit()
+    
