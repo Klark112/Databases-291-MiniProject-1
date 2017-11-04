@@ -220,33 +220,44 @@ class AgentDashBoard(tk.Frame):
 class Stock(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)        
-        userLabel= ttk.Label(self, text="Enter Store ID(sid)",font=SMALL_FONT)
-        userLabel.pack()
+        userLabel4= ttk.Label(self, text="Enter Store ID(sid)",font=SMALL_FONT)
+        userLabel4.pack()
         sidInfo = Entry(self)
         sidInfo.pack()    
         
-        userLabel= ttk.Label(self, text="Enter Product ID(pid)",font=SMALL_FONT)
-        userLabel.pack()
+        userLabel3= ttk.Label(self, text="Enter Product ID(pid)",font=SMALL_FONT)
+        userLabel3.pack()
         pidInfo = Entry(self)
         pidInfo.pack()        
         
         CheckButton = ttk.Button(self, text="Check",
-                             command=lambda: self.StockCheck(sidInfo.get(), pidInfo.get()))
+                             command=lambda: self.StockImplement(sidInfo.get(), pidInfo.get()))
         CheckButton.pack()
         
-    def StockCheck(self, sid, pid):
-        #display quantity button
-        userLabel= ttk.Label(self, text="Enter Qty",font=SMALL_FONT)
-        userLabel.pack()
-        qtyInfo = Entry(self)
-        qtyInfo.pack()                
-
-        qtyButton = ttk.Button(self, text="Quantity", command=lambda: StockQTY(sid,pid, qtyInfo.get()))
-        qtyButton.pack()
-  
-        #StockQTY(sid, pid, qtyInfo.get())
-
+        buttonReturn = ttk.Button(self, text="Return",
+                             command=lambda: controller.show_frame(AgentDashBoard))
+        buttonReturn.pack()            
         
+    def StockImplement(self, sid, pid):
+        #display quantity button
+        if(StockCheck(self, sid, pid)==True):
+            userLabel= ttk.Label(self, text="Enter Qty",font=SMALL_FONT)
+            userLabel.pack()
+            qtyInfo = Entry(self)
+            qtyInfo.pack()                
+            qtyButton = ttk.Button(self, text="Add Quantity", command=lambda: StockQTY(sid,pid, qtyInfo.get()))
+            qtyButton.pack()
+        
+            userLabel2= ttk.Label(self, text="Enter Price",font=SMALL_FONT)
+            userLabel2.pack()
+            priceInfo = Entry(self)
+            priceInfo.pack()                
+            priceButton = ttk.Button(self, text="Change Price", command=lambda: StockPrice(sid,pid, priceInfo.get()))
+            priceButton.pack()         
+            
+        else:
+            mylabel = Label(self, text = "Store Not Present", font = ("Verdana", 12))
+            mylabel.pack()
         
 if __name__ == "__main__":
     app = MiniProjectapp()
