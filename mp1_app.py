@@ -289,7 +289,6 @@ class UpdateDeliveryWIndow(tk.Tk):
         self.destroy()
 
 
-
 class SetUpDeliveryWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
         self.newDelivery = Delivery()
