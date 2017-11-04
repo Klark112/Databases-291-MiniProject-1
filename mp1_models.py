@@ -122,7 +122,7 @@ class Delivery():
             c.execute("SELECT oid FROM deliveries WHERE trackingNo = :id",{"id": trackingNum})
             result = c.fetchall()
             for i in result:
-                orderlist.append(i)
+                orderlist.append(i[0])
             self.orders = orderlist
             conn.commit()
             conn.close()
@@ -132,6 +132,23 @@ class Delivery():
             conn.commit()
             conn.close()
             print("ERROR getting deliveries")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
+    def removeDelivery(self,trackNum):
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("DELETE FROM deliveries WHERE trackingNo = :tn",
+                      {"tn": trackNum})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR removing delivery")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             print(message)

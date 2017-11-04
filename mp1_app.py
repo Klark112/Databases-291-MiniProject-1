@@ -216,11 +216,78 @@ class AgentDashBoard(tk.Frame):
         set_up_window.mainloop()
 
     def UpdateDelivery(self):
-        print("2")
         update_window = UpdateDeliveryWIndow()
         update_window.geometry("270x480")
         update_window.mainloop()
         return
+
+
+class UpdateDeliveryWIndow(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        self.curDelivery = Delivery()
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Update Delivery")
+        label = ttk.Label(self, text="Update Delivery", font=LARGE_FONT)
+        label.pack(side="top")
+        selDelLabel = ttk.Label(self, text="Select Delivery No.: ", font=SMALL_FONT)
+        selDelLabel.pack()
+        selDelEntry = ttk.Entry(self, width = 8)
+        selDelEntry.pack()
+        selDelButton = ttk.Button(self, text="Get Delivery",
+                                          command=lambda: self.GetDelivery(selDelEntry.get()))
+        selDelButton.pack()
+
+
+        ReturnButton = ttk.Button(self, text="Return",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
+
+    def GetDelivery(self, ID):
+        self.curDelivery.getDelivery(ID)
+
+        delnumlabel = ttk.Label(self, text="Delivery No. " + str(self.curDelivery.getTrackingNum()), font=SMALL_FONT)
+        delnumlabel.pack()
+        ol = StringVar(self, value=','.join(map(str, self.curDelivery.orders)))
+        orderLabel = ttk.Label(self, text="Change Orders:", font=SMALL_FONT)
+        orderLabel.pack()
+        orderList = Entry(self, textvariable=ol)
+        orderList.pack()
+        pdl = StringVar(self, value=self.curDelivery.pickUpTime)
+        pickupDateLabel = ttk.Label(self, text="Change Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
+        pickupDateLabel.pack()
+        pickDateInp = Entry(self, width=20, textvariable=pdl)
+        pickDateInp.pack()
+        ddl = StringVar(self, value=self.curDelivery.dropOffTime)
+        dropupDateLabel = ttk.Label(self, text="Add Drop-Off Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
+        dropupDateLabel.pack()
+        dropDateInp = Entry(self, width=20, textvariable=ddl)
+        dropDateInp.pack()
+
+        UpdateDeliveryButton = ttk.Button(self, text="Update",
+                                          command=lambda: self.updateDelivery(orderList.get(),pickDateInp.get(),dropDateInp.get()))
+        UpdateDeliveryButton.pack()
+
+    def updateDelivery(self,nOrders, npDate, ndDate):
+        self.curDelivery.removeDelivery(self.curDelivery.trackingNum)   # remove any rows with the delivery tracking num
+        if npDate != '':
+            npDate = datetime.datetime.strptime(npDate, '%Y-%m-%d %H:%M')
+        if ndDate != '':
+            ndDate = datetime.datetime.strptime(ndDate, '%Y-%m-%d %H:%M')
+        orderlist = map(int, nOrders.split(','))
+        try:
+            self.curDelivery.pickUpTime = npDate
+            self.curDelivery.dropOffTime = ndDate
+            self.curDelivery.orders = orderlist
+            self.curDelivery.saveDelivery()
+            messagebox.showinfo("Delivery Updated", "Delivery No."+str(self.curDelivery.trackingNum)+" has been updated!")
+
+        except Exception as ex:
+            messagebox.showerror("Error", "Something went wrong when updating")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+        self.destroy()
+
 
 
 class SetUpDeliveryWindow(tk.Tk):
@@ -232,29 +299,28 @@ class SetUpDeliveryWindow(tk.Tk):
         label.pack(side="top")
         delnumlabel = ttk.Label(self, text="Delivery No. "+str(self.newDelivery.getTrackingNum()), font=SMALL_FONT)
         delnumlabel.pack()
-        orderLabel = ttk.Label(self, text="Enter Orders:", font=SMALL_FONT)
+        orderLabel = ttk.Label(self, text="Enter Orders (1,3,12,etc..):", font=SMALL_FONT)
         orderLabel.pack()
         orderList = Entry(self)
         orderList.pack()
-        dateLabel =  ttk.Label(self, text="Pick up Date[YYYY/MM/DD hh:mm] (optional):", font=SMALL_FONT)
+        dateLabel =  ttk.Label(self, text="Pick up Date[YYYY-MM-DD hh:mm] (optional):", font=SMALL_FONT)
         dateLabel.pack()
         dateInp = Entry(self, width=20)
         dateInp.pack()
 
-        CreateDeliveryButton =ttk.Button(self, text="Create Delivery",command = lambda: self.CreateNewDelivery(str(dateInp.get()), orderList.get()))
+        CreateDeliveryButton =ttk.Button(self, text="Create Delivery",command = lambda: self.CreateNewDelivery( orderList.get(),str(dateInp.get())))
         CreateDeliveryButton.pack()
 
         ReturnButton = ttk.Button(self, text="Return",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
 
-    def CreateNewDelivery(self, datestring, orders):
+    def CreateNewDelivery(self,orders, datestring=None ):
         if datestring != '':
-            dateinp = datetime.datetime.strptime(datestring, '%Y/%m/%d %H:%M')
-            self.newDelivery.pickUpTime = dateinp
-        orderlist = orders.split(',')
+            datestring = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M')
+        orderlist = map(int, orders.split(','))
         try:
-            self.newDelivery.pickUpTime = dateinp
+            self.newDelivery.pickUpTime = datestring
             self.newDelivery.orders = orderlist
             self.newDelivery.saveDelivery()
             messagebox.showinfo("Delivery Created", "Delivery No."+str(self.newDelivery.trackingNum)+" has been added to the database!")
