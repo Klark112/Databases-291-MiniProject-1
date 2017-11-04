@@ -71,6 +71,7 @@ class Delivery():
         return self.orders
 
     def saveDelivery(self):   # for every order added to this delivery, insert new row into data table
+        # TODO: CHECK IF ORDER ID IS VALID
         try:
             if self.trackingNum not in self.trackingNumList:
                 self.trackingNumList.append(self.trackingNum)
@@ -205,6 +206,12 @@ class Oline():
             c = conn.cursor()
             c.execute("SELECT oid, sid, pid, qty, uprice FROM olines WHERE oid=:od AND sid=:sd AND pID =:pd",
                       { "od": oid, "pd": pid, "sd": sid})
+            result = c.fetchone()
+            self.oID = result[0]
+            self.sID = result[1]
+            self.pID = result[2]
+            self.qty = result[3]
+            self.uprice = result[4]
             conn.commit()
             conn.close()
         except Exception as ex:
@@ -333,6 +340,7 @@ class Order(): # oid, cid, odate, address
     def getOrderDate(self): # Return date current order was made
         return self.date
 
+
 class Customer():
     def __init__(self,cid, name, address, pwd):
         self.cid = cid
@@ -362,6 +370,28 @@ class Agent():
         self.aid = aid
         self.name = name
         self.pwd = pwd
+
+    def getAgentInfo(self,ID):
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT aid, name, pwd FROM agents WHERE aid=:ad",
+                      { "od": ID})
+            result = c.fetchone()
+            self.aID = result[0]
+            self.name = result[1]
+            self.pwd = result[2]
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR getting agent info")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
 
 
 class Carry():

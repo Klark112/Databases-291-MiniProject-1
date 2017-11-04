@@ -12,6 +12,7 @@ from ttkcal import *
 LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
 
+
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -36,6 +37,7 @@ class MiniProjectapp(tk.Tk):
     def show_frame(self, cont):  # function to move desired frame to the front
         frame = self.frames[cont]
         frame.tkraise()
+
 
 # Initial Login Page
 class StartPage(tk.Frame):
@@ -76,6 +78,7 @@ class StartPage(tk.Frame):
         else:
             messagebox.showerror("Problem", "Invalid characters")
 
+
 # User Dashboard after successful login
 class UserDashBoard(tk.Frame):
     def __init__(self, parent, controller):
@@ -107,7 +110,6 @@ class UserDashBoard(tk.Frame):
     def ListOrders(self):
         print("3")
         return
-
 
 
 # Registration Page for Regular Users
@@ -155,7 +157,6 @@ class Register(tk.Frame):
                 messagebox.showerror("Different passwords","The passwords you entered must match.")
         else:
             messagebox.showerror("Invalid ID", "Username or Password contains invalid characters")
-
 
 
 # Login page for agents
@@ -208,16 +209,19 @@ class AgentDashBoard(tk.Frame):
         logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
         logoutButton.pack()
+
     def SetUpDelivery(self):
-        print("1")
         set_up_window = SetUpDeliveryWindow()
         set_up_window.geometry("270x480")
         set_up_window.mainloop()
-        return
 
     def UpdateDelivery(self):
         print("2")
+        update_window = UpdateDeliveryWIndow()
+        update_window.geometry("270x480")
+        update_window.mainloop()
         return
+
 
 class SetUpDeliveryWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -232,24 +236,35 @@ class SetUpDeliveryWindow(tk.Tk):
         orderLabel.pack()
         orderList = Entry(self)
         orderList.pack()
+        dateLabel =  ttk.Label(self, text="Pick up Date[YYYY/MM/DD hh:mm] (optional):", font=SMALL_FONT)
+        dateLabel.pack()
+        dateInp = Entry(self, width=20)
+        dateInp.pack()
 
-        pickUpDateButton = ttk.Button(self, text="Pick Up Time: ",command = lambda: self.PickDate())
-        pickUpDateButton.pack()
-
-        CreateDeliveryButton =ttk.Button(self, text="Create Delivery",command = lambda: self.newDelivery.saveDelivery())
+        CreateDeliveryButton =ttk.Button(self, text="Create Delivery",command = lambda: self.CreateNewDelivery(str(dateInp.get()), orderList.get()))
         CreateDeliveryButton.pack()
 
         ReturnButton = ttk.Button(self, text="Return",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
 
-    def PickDate(self):
-        calendar = Calendar(self)
-        calendar.pack()
-        x = calendar.selection
-        print
-        'x is: ', x
-        return x
+    def CreateNewDelivery(self, datestring, orders):
+        if datestring != '':
+            dateinp = datetime.datetime.strptime(datestring, '%Y/%m/%d %H:%M')
+            self.newDelivery.pickUpTime = dateinp
+        orderlist = orders.split(',')
+        try:
+            self.newDelivery.pickUpTime = dateinp
+            self.newDelivery.orders = orderlist
+            self.newDelivery.saveDelivery()
+            messagebox.showinfo("Delivery Created", "Delivery No."+str(self.newDelivery.trackingNum)+" has been added to the database!")
+
+        except Exception as ex:
+            messagebox.showerror("Error", "Something went wrong")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+        self.destroy()
 
 
 class Stock(tk.Frame):
