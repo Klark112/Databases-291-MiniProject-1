@@ -149,8 +149,7 @@ def StockQTY(sid, pid, qty):
     c.execute("""UPDATE carries SET qty= qty + :qt WHERE sid=:sd AND pid=:pd""",
               {"qt":qty, "sd":sid, "pd":pid})
     conn.commit()
-    conn.close()
-            
+    conn.close()          
     
 def StockPrice(sid, pid, price):
     conn = sqlite3.connect(DATABASE)
@@ -159,5 +158,3 @@ def StockPrice(sid, pid, price):
               {"pr":price, "sd":sid, "pd":pid})
     conn.commit()
     conn.close()    
-
-
