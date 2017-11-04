@@ -7,10 +7,10 @@ from tkinter import ttk
 from tkinter import *
 from mp1 import *
 from mp1_models import *
+from ttkcal import *
 
 LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
-
 
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -36,7 +36,6 @@ class MiniProjectapp(tk.Tk):
     def show_frame(self, cont):  # function to move desired frame to the front
         frame = self.frames[cont]
         frame.tkraise()
-
 
 # Initial Login Page
 class StartPage(tk.Frame):
@@ -192,8 +191,6 @@ class AgentLogin(tk.Frame):
 
 #Dashboard for agents, containing all the actions that agents can perform
 class AgentDashBoard(tk.Frame):
-
-
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="AgentDashboard", font=LARGE_FONT)
@@ -212,16 +209,48 @@ class AgentDashBoard(tk.Frame):
                              command=lambda: controller.show_frame(StartPage))
         logoutButton.pack()
     def SetUpDelivery(self):
-        agent_root = tk.Tk()
-        setup_window = tk.Toplevel(agent_root)
-
-
-
-        agent_root.mainloop()
+        print("1")
+        set_up_window = SetUpDeliveryWindow()
+        set_up_window.geometry("270x480")
+        set_up_window.mainloop()
+        return
 
     def UpdateDelivery(self):
         print("2")
         return
+
+class SetUpDeliveryWindow(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        self.newDelivery = Delivery()
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Setup Delivery")
+        label = ttk.Label(self, text="Setup New Delivery", font=LARGE_FONT)
+        label.pack(side="top")
+        delnumlabel = ttk.Label(self, text="Delivery No. "+str(self.newDelivery.getTrackingNum()), font=SMALL_FONT)
+        delnumlabel.pack()
+        orderLabel = ttk.Label(self, text="Enter Orders:", font=SMALL_FONT)
+        orderLabel.pack()
+        orderList = Entry(self)
+        orderList.pack()
+
+        pickUpDateButton = ttk.Button(self, text="Pick Up Time: ",command = lambda: self.PickDate())
+        pickUpDateButton.pack()
+
+        CreateDeliveryButton =ttk.Button(self, text="Create Delivery",command = lambda: self.newDelivery.saveDelivery())
+        CreateDeliveryButton.pack()
+
+        ReturnButton = ttk.Button(self, text="Return",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
+
+    def PickDate(self):
+        calendar = Calendar(self)
+        calendar.pack()
+        x = calendar.selection
+        print
+        'x is: ', x
+        return x
+
 
 class Stock(tk.Frame):
     def __init__(self, parent, controller):
@@ -252,7 +281,7 @@ class Stock(tk.Frame):
   
         #StockQTY(sid, pid, qtyInfo.get())
 
-        
+
         
 if __name__ == "__main__":
     app = MiniProjectapp()

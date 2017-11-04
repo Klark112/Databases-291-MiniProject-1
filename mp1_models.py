@@ -37,7 +37,6 @@ def getTableSize(table):
 # CLASSES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Model Classes for database tables
 
-
 class Delivery():
     trackingNumList =[] # Used to identify if tracking number is unique
     def __init__(self,pickupTime = None, orders= []):
@@ -83,6 +82,9 @@ class Delivery():
             conn.commit()
             conn.close()
         except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
             print("Error saving new delivery")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -97,6 +99,9 @@ class Delivery():
             conn.commit()
             conn.close()
         except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
             print("Error updating delivery times")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -122,6 +127,9 @@ class Delivery():
             conn.close()
 
         except Exception as ex: #TODO: Print message saying trackingNum does not exist
+            conn.rollback()
+            conn.commit()
+            conn.close()
             print("ERROR getting deliveries")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -138,6 +146,9 @@ class Delivery():
             conn.close()
 
         except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
             print("ERROR removing orders")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -152,20 +163,92 @@ class Oline():
         self.qty = qty
         self.uprice = uprice
 
-    def updatePID(self, value):
-        return
-
     def updateUprice(self, value):
-        return
+        try:
+            self.uprice = value
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("UPDATE onlines SET uprice = :up WHERE oid = :od AND pid = :pd AND sid = :sd",
+                          {"vl":value,"od":self.oID,"pd":self.pID,"sd":self.sID})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR updating uprice")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
-    def getOID(self):
-        return self.oID
+    def updateQty(self, value):
+        try:
+            self.uprice = value
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("UPDATE onlines SET qty = :vl WHERE oid = :od AND pid = :pd AND sid = :sd",
+                          {"uvl":value,"od":self.oID,"pd":self.pID,"sd":self.sID})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR updating qty")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
-    def getSID(self):
-        return self.sID
+    def getOlineInfo(self,oid,pid,sid):
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT oid, sid, pid, qty, uprice FROM olines WHERE oid=:od AND sid=:sd AND pID =:pd",
+                      { "od": oid, "pd": pid, "sd": sid})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR getting oline info")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
-    def getPID(self):
-        return self.pID
+    def saveOlineInfo(self):
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("""INSERT INTO olines(oid, sid, pid, qty, uprice) VALUES(?, ?, ?, ?, ?) """,
+                          (self.oID, self.sID, self.pID, self.qty, self.uprice))
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("Error saving oline")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
+    def removeOline(self, oid, sid, pid):
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("DELETE FROM olines WHERE oid=:od AND sid=:sd AND pID =:pd",
+                      {"od": oid, "pd": pid, "sd": sid})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("Error removing")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
     def getUprice(self):
         return self.uprice
@@ -174,7 +257,7 @@ class Oline():
         return self.qty
 
 
-class Order():
+class Order(): # oid, cid, odate, address
     __ID = getTableSize("orders") + 1
     def __init(self,cid,address):
         self.oID = self.__ID
@@ -182,11 +265,28 @@ class Order():
         self.address = address
         self.date = datetime.now()
 
-    def retrieveOrder(self, ID):   # Update all self values to match the one from the database and return OID
+    def saveOrder(self): #TODO: Error where order id may not be unique --> Make recursive call to saveorder with orderId +1
         try:
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
-            c.execute("SELECT oid, cid, address, date FROM orders WHERE oid = :id", {"id": ID})
+            c.execute("""INSERT INTO orders(oid, cid, address, odate) VALUES(?, ?, ?, ?) """,
+                      (self.oID, self.cID, self.address, self.date))
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("Error saving oline")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
+    def getOrderInfo(self, ID):   # Update all self values to match the one from the database and return OID
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT oid, cid, address, odate FROM orders WHERE oid = :id", {"id": ID})
             result = c.fetchone()
             self.oID = result[0]
             self.cID = result[1]
@@ -196,9 +296,30 @@ class Order():
             conn.close()
 
         except Exception as ex: #TODO: Print message saying order id does not exist
+            conn.rollback()
+            conn.commit()
+            conn.close()
             print("ERROR with retrieveOrder")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
+    def updateAddress(self, newAddress):    #Update address of current Order
+        self.address = newAddress
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        try:
+            c.execute("UPDATE orders SET address = :ad WHERE oid = :id",{"ad":newAddress,"id":self.oID})
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("Error updating order address")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
     def getOID(self):
         return self.oID
@@ -211,19 +332,6 @@ class Order():
 
     def getOrderDate(self): # Return date current order was made
         return self.date
-
-    def updateAddress(self, newAddress):    #Update address of current Order
-        self.address = newAddress
-        conn = sqlite3.connect(DATABASE)
-        c = conn.cursor()
-        try:
-            c.execute("UPDATE orders SET address = :ad WHERE oid = :id",{"ad":newAddress,"id":self.oID})
-            conn.commit()
-            conn.close()
-        except Exception as ex:
-            print("Error updating order address")
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
 
 class Customer():
     def __init__(self,cid, name, address, pwd):
@@ -262,6 +370,7 @@ class Carry():
         self.pid = pid
         self.qty = qty
         self.uprice = uprice
+
 
 
 class Category():
