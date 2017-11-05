@@ -1,3 +1,4 @@
+#MP!_APP##############################
 #CMPUT 291 Mini Project 1
 #Group Members: Justin Daza. Klark Bliss, Siddhart Khanna
 #Project GUI main code to run our application
@@ -7,7 +8,6 @@ from tkinter import ttk
 from tkinter import *
 from mp1 import *
 from mp1_models import *
-from ttkcal import *
 
 LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
@@ -50,8 +50,10 @@ class StartPage(tk.Frame):
         userLabel= ttk.Label(self, text="UserID",font=SMALL_FONT)
         userLabel.pack()
         userInfo = Entry(self)
-        userInfo.pack()
         
+        globalUserID = userInfo
+        
+        userInfo.pack()
         passLabel = ttk.Label(self, text="Password",font=SMALL_FONT)
         passLabel.pack()
         passInfo = Entry(self, show="*")
@@ -77,11 +79,8 @@ class StartPage(tk.Frame):
         if re.match("^[A-Za-z0-9_]*$", username) and re.match("^[A-Za-z0-9_]*$", password):
             if(log_in(username, password) == True):
                 controller.show_frame(UserDashBoard)
-                global globalUserID
-                globalUserID = username
         else:
             messagebox.showerror("Problem", "Invalid characters")
-
 
 # User Dashboard after successful login
 class UserDashBoard(tk.Frame):
@@ -90,14 +89,13 @@ class UserDashBoard(tk.Frame):
         label = tk.Label(self, text="Welcome", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        Button1 = ttk.Button(self, text="Search Products",
+        Button1 = ttk.Button(self, text="Search for products",
                              command=lambda: self.SearchForProducts())
         Button1.pack()
-
         Button2 = ttk.Button(self, text="Place an order",
                              command=lambda: controller.show_frame(placeOrder))
         Button2.pack()
-        Button3 = ttk.Button(self, text="List Orders",
+        Button3 = ttk.Button(self, text="List orders",
                              command=lambda: self.ListOrders())
         Button3.pack()
         logoutButton = ttk.Button(self, text="Logout",
@@ -115,6 +113,7 @@ class UserDashBoard(tk.Frame):
     def ListOrders(self):
         print("3")
         return
+
 
 
 # Registration Page for Regular Users
@@ -162,6 +161,7 @@ class Register(tk.Frame):
                 messagebox.showerror("Different passwords","The passwords you entered must match.")
         else:
             messagebox.showerror("Invalid ID", "Username or Password contains invalid characters")
+
 
 
 # Login page for agents
@@ -214,128 +214,13 @@ class AgentDashBoard(tk.Frame):
         logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: controller.show_frame(StartPage))
         logoutButton.pack()
-
     def SetUpDelivery(self):
-        set_up_window = SetUpDeliveryWindow()
-        set_up_window.geometry("270x480")
-        set_up_window.mainloop()
-
-    def UpdateDelivery(self):
-        update_window = UpdateDeliveryWIndow()
-        update_window.geometry("270x480")
-        update_window.mainloop()
+        print("1")
         return
 
-
-class UpdateDeliveryWIndow(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        self.curDelivery = Delivery()
-        tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.wm_title(self, "Update Delivery")
-        label = ttk.Label(self, text="Update Delivery", font=LARGE_FONT)
-        label.pack(side="top")
-        selDelLabel = ttk.Label(self, text="Select Delivery No.: ", font=SMALL_FONT)
-        selDelLabel.pack()
-        selDelEntry = ttk.Entry(self, width = 8)
-        selDelEntry.pack()
-        selDelButton = ttk.Button(self, text="Get Delivery",
-                                          command=lambda: self.GetDelivery(selDelEntry.get()))
-        selDelButton.pack()
-
-
-        ReturnButton = ttk.Button(self, text="Return",
-                                  command=lambda: self.destroy())
-        ReturnButton.pack()
-
-    def GetDelivery(self, ID):
-        self.curDelivery.getDelivery(ID)
-
-        delnumlabel = ttk.Label(self, text="Delivery No. " + str(self.curDelivery.getTrackingNum()), font=SMALL_FONT)
-        delnumlabel.pack()
-        ol = StringVar(self, value=','.join(map(str, self.curDelivery.orders)))
-        orderLabel = ttk.Label(self, text="Change Orders:", font=SMALL_FONT)
-        orderLabel.pack()
-        orderList = Entry(self, textvariable=ol)
-        orderList.pack()
-        pdl = StringVar(self, value=self.curDelivery.pickUpTime)
-        pickupDateLabel = ttk.Label(self, text="Change Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
-        pickupDateLabel.pack()
-        pickDateInp = Entry(self, width=20, textvariable=pdl)
-        pickDateInp.pack()
-        ddl = StringVar(self, value=self.curDelivery.dropOffTime)
-        dropupDateLabel = ttk.Label(self, text="Add Drop-Off Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
-        dropupDateLabel.pack()
-        dropDateInp = Entry(self, width=20, textvariable=ddl)
-        dropDateInp.pack()
-
-        UpdateDeliveryButton = ttk.Button(self, text="Update",
-                                          command=lambda: self.updateDelivery(orderList.get(),pickDateInp.get(),dropDateInp.get()))
-        UpdateDeliveryButton.pack()
-
-    def updateDelivery(self,nOrders, npDate, ndDate):
-        self.curDelivery.removeDelivery(self.curDelivery.trackingNum)   # remove any rows with the delivery tracking num
-        if npDate != '':
-            npDate = datetime.datetime.strptime(npDate, '%Y-%m-%d %H:%M')
-        if ndDate != '':
-            ndDate = datetime.datetime.strptime(ndDate, '%Y-%m-%d %H:%M')
-        orderlist = map(int, nOrders.split(','))
-        try:
-            self.curDelivery.pickUpTime = npDate
-            self.curDelivery.dropOffTime = ndDate
-            self.curDelivery.orders = orderlist
-            self.curDelivery.saveDelivery()
-            messagebox.showinfo("Delivery Updated", "Delivery No."+str(self.curDelivery.trackingNum)+" has been updated!")
-
-        except Exception as ex:
-            messagebox.showerror("Error", "Something went wrong when updating")
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-        self.destroy()
-
-
-class SetUpDeliveryWindow(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        self.newDelivery = Delivery()
-        tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.wm_title(self, "Setup Delivery")
-        label = ttk.Label(self, text="Setup New Delivery", font=LARGE_FONT)
-        label.pack(side="top")
-        delnumlabel = ttk.Label(self, text="Delivery No. "+str(self.newDelivery.getTrackingNum()), font=SMALL_FONT)
-        delnumlabel.pack()
-        orderLabel = ttk.Label(self, text="Enter Orders (1,3,12,etc..):", font=SMALL_FONT)
-        orderLabel.pack()
-        orderList = Entry(self)
-        orderList.pack()
-        dateLabel =  ttk.Label(self, text="Pick up Date[YYYY-MM-DD hh:mm] (optional):", font=SMALL_FONT)
-        dateLabel.pack()
-        dateInp = Entry(self, width=20)
-        dateInp.pack()
-
-        CreateDeliveryButton =ttk.Button(self, text="Create Delivery",command = lambda: self.CreateNewDelivery( orderList.get(),str(dateInp.get())))
-        CreateDeliveryButton.pack()
-
-        ReturnButton = ttk.Button(self, text="Return",
-                                  command=lambda: self.destroy())
-        ReturnButton.pack()
-
-    def CreateNewDelivery(self,orders, datestring=None ):
-        if datestring != '':
-            datestring = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M')
-        orderlist = map(int, orders.split(','))
-        try:
-            self.newDelivery.pickUpTime = datestring
-            self.newDelivery.orders = orderlist
-            self.newDelivery.saveDelivery()
-            messagebox.showinfo("Delivery Created", "Delivery No."+str(self.newDelivery.trackingNum)+" has been added to the database!")
-
-        except Exception as ex:
-            messagebox.showerror("Error", "Something went wrong")
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-        self.destroy()
-
+    def UpdateDelivery(self):
+        print("2")
+        return
 
 class Stock(tk.Frame):
     def __init__(self, parent, controller):
@@ -384,10 +269,12 @@ class placeOrder(tk.Frame):
         tk.Frame.__init__(self, parent)   
         basketItem = Label(self, text = "Items in Basket", font = ("Verdana", 12))
         basketItem.pack()
+        
         listBasket = [[1, 'p1', 4],[2, 'p4', 4],[1, 'p1', 5], [1, 'p2', 9]] #sid, pid, qty
         checkQuantity = ttk.Button(self, text="Check Quantity", command=lambda: listItems(self, globalUserID, listBasket))
         checkQuantity.pack()        
-
+        
+        
         
 if __name__ == "__main__":
     app = MiniProjectapp()
@@ -395,3 +282,227 @@ if __name__ == "__main__":
     app.mainloop()
 
 
+
+
+#MP1#######################3
+# Back end File for CMPUT 291, Mini-Project 1 App
+# Group members: Justin Daza, Klark Bliss, Siddhart Khanna
+# This file contains GUI functions
+
+import sqlite3
+import tkinter as tk
+import time
+from tkinter import messagebox
+from mp1_app import *
+from mp1_models import *
+
+DATABASE = 'mp1.db'
+# global variable for backend to keep track of user
+USER = ""
+
+def log_in(username,password): #NOTE: username and password are currently blank
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute(" SELECT cid FROM customers WHERE customers.cid=:un",{"un":username})
+    result = c.fetchone()
+    try:
+        if(result[0] == username):
+            c.execute(" SELECT cid, pwd FROM customers WHERE customers.pwd=:pw AND customers.cid=:un", {"pw": password, "un": username})
+            result = c.fetchone()
+            # print(result[1])
+            if(result[1] == password):
+                conn.commit()
+                conn.close()
+                setUser(username)
+                return True
+            else:
+                messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+                conn.commit()
+                conn.close()
+                return False
+        else:
+            messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+            conn.commit() #NOTE: I don't think we need this commit statement since we aren't changing anything
+            conn.close()
+            return False
+    except TypeError:
+        messagebox.showinfo("Invalid Login","The username or password you entered is incorrect." )
+
+    return False
+
+
+def agent_log_in(username, password):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute(" SELECT aid FROM agents WHERE agents.aid=:un", {"un": username})
+    result = c.fetchone() 
+    
+    try:
+        if (result[0] == username):
+            c.execute(" SELECT aid, pwd FROM agents WHERE agents.pwd=:pw AND agents.aid=:un",
+                      {"pw": password, "un": username})
+            result = c.fetchone()
+            # print(result[1])
+            if (result[1] == password):
+                conn.commit()
+                conn.close()
+                setUser(username)
+                return True
+            else:
+                messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+                conn.commit()
+                conn.close()
+                return False
+        else:
+            messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+            conn.commit()  # NOTE: I don't think we need this commit statement since we aren't changing anything
+            conn.close()
+            return False
+    except TypeError:
+        messagebox.showinfo("Invalid Login", "The username or password you entered is incorrect.")
+
+    return False
+
+
+def setUser(username):
+    global USER
+    USER = username
+
+def getUser():
+    global USER
+    return USER
+
+def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    try:
+        c.execute(""" INSERT INTO customers(cid, name, address, pwd) VALUES (?, ?, ?, ?)""", (cid,name,address,pwd))
+        conn.commit()
+        conn.close()
+        return(True)
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        conn.commit()
+        conn.close()
+        messagebox.showerror("Invalid ID", "Invalid Registration Info. ID may have already been taken")
+    except Exception as ex:
+        conn.rollback()
+        conn.commit()
+        conn.close()
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        messagebox.showerror("Signup error", message)
+
+
+def StockCheck(self, sid, pid):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    
+    c.execute("SELECT sid, pid FROM carries WHERE sid=:sd AND pid=:pd", 
+              {"sd": sid, "pd": pid})
+    storeID = c.fetchone()
+    
+    if(storeID is None):
+        c.execute("SELECT sid FROM carries WHERE sid =:sd",{"sd":sid})
+        storePIDN = c.fetchone()
+        if(storePIDN is None):
+            return False                        
+        else:    
+            conn.commit()
+            default = None
+            qty = 0
+            mylabel = Label(self, text = "Product not present(Added to store)", font = ("Verdana", 8))
+            mylabel.pack()            
+            c.execute("""INSERT INTO carries VALUES(:sd, :pd, :qty, :def)""",
+                      {"sd":sid, "pd":pid,"qty":qty, "def":default})
+            conn.commit()   
+            conn.close()            
+            return True
+    else:
+        if((storeID[0])==int(sid)):
+            if(storeID[1] == pid):
+                conn.commit()
+                conn.close()             
+                return True
+            
+        else:
+            conn.commit()
+            conn.close()         
+            return False    
+
+def StockQTY(sid, pid, qty):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    
+    c.execute("""UPDATE carries SET qty= qty + :qt WHERE sid=:sd AND pid=:pd""",
+              {"qt":qty, "sd":sid, "pd":pid})
+    conn.commit()
+    conn.close()          
+    
+def StockPrice(sid, pid, price):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("""UPDATE carries SET uprice =:pr WHERE sid=:sd AND pid=:pd""",
+              {"pr":price, "sd":sid, "pd":pid})
+    conn.commit()
+    conn.close()    
+    
+def listItems(self, userID, listBasket):
+    for n in range(len(listBasket)):
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()        
+        c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
+                 {"sd":listBasket[n][0], "pd":listBasket[n][1]})
+        conn.commit()
+        res = c.fetchall()
+       
+        if(listBasket[n][2]>res[0][0]):
+            mylabel = Label(self, text = "Quantity too High.\nEnter different quantity \nOr delete Item", font = ("Verdana", 8))
+            mylabel.pack()
+            myInfo = Entry(self)
+            myInfo.pack()
+            updateButton = ttk.Button(self, text="Update", command=lambda: updateList(self, myInfo.get(), n, listBasket))
+            updateButton.pack()
+            deleteButton = ttk.Button(self, text="Delete",command=lambda: deleteList(self, n, listBasket))
+            deleteButton.pack()            
+            
+        else:
+            mylabel2 = Label(self, text = "Order Placed", font = ("Verdana", 9))
+            mylabel2.pack()             
+            #update the table after placing an order
+            c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
+                      {"qt":listBasket[n][2], "sd":listBasket[n][0], "pd":listBasket[n][1]})
+            conn.commit()
+        
+        #for generating the oid
+        c.execute("""SELECT oid FROM orders""")
+        conn.commit()
+        result = c.fetchall()
+
+        high = result[0]  
+        for each in result:
+            if high < each:
+                high = each
+
+        newOid = high[0] + 1  
+
+        #for getting the users address
+        c.execute("""SELECT c1.address FROM customers c1 WHERE c1.cid =:userID""",{"userID":userID})
+        conn.commit()
+        resultAddress = c.fetchone()
+        #for creating the dates
+        dates = time.strftime("%Y/%m/%d")
+        #generating a new order
+        c.execute("""INSERT INTO orders VALUES (:od, :cd, :date, :adr)""", 
+                  {"od":newOid, "cd":userID, "date":dates, "adr":resultAddress[0]})
+        conn.commit()
+      
+            
+def updateList(self, valueQty, pos, listBasket):
+    #print(pos)
+    listBasket[pos][2] = valueQty
+    listItems(self, listBasket)
+
+def deleteList(self, pos, listBasket):
+    listBasket.pop(pos)
+    listItems(self, listBasket)
