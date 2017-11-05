@@ -19,94 +19,131 @@ import sqlite3
 from itertools import chain
 DATABASE = 'mp1.db'
 
-"""
-SAMPLE SEARCH QUERY if input 'milk', '4', 'cat' --> tested and works
+class Search_products():
+    def __init__(self, key_terms):
+        self.key_terms = key_terms
+        self.results = self.search_Items(key_terms)
 
-SELECT pname , sname, count(*) as matches
-FROM(
-    SELECT pr.name as pname, st.name as sname
-    FROM products pr 
-    INNER JOIN carries ca ON pr.pid = ca.pid 
-    INNER JOIN stores st  ON ca.sid = st.sid 
-    WHERE pr.name LIKE ('%' ||'milk'|| '%')
-    UNION ALL
-    SELECT pr.name as pname, st.name as snams
-    FROM products pr 
-    INNER JOIN carries ca ON pr.pid = ca.pid 
-    INNER JOIN stores st  ON ca.sid = st.sid 
-    WHERE pr.name LIKE ('%' ||'4'|| '%')
-    UNION ALL
-    SELECT pr.name as pname, st.name as sname
-    FROM products pr 
-    INNER JOIN carries ca ON pr.pid = ca.pid 
-    INNER JOIN stores st  ON ca.sid = st.sid 
-    WHERE pr.name LIKE ('%' ||'cat'|| '%')
-    )
-GROUP BY pname, sname
-ORDER BY matches DESC
-"""
-
-def search_Items(search_terms):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-
-    #get search terms
-
-    search_terms_list=search_terms.split()
-    term_matches=[]
-    print(search_terms_list)
-    query = 'SELECT pname , sname, count(*) as matches FROM('
-    for key in search_terms_list:
-        print(key)
-        query +=" SELECT pr.name as pname, st.name as sname FROM products pr INNER JOIN carries ca ON pr.pid = ca.pid INNER JOIN stores st  ON ca.sid = st.sid WHERE pr.name LIKE ('%' ||'" + key + "'|| '%') UNION ALL"
-
-    query = query[:-9] + ')GROUP BY pname, sname ORDER BY  matches DESC, sname DESC'
-    print(query)
-    c.execute(query)
-    res = c.fetchall()
-    for i in res:
-        print(i)
-    conn.commit()
-    conn.close()
-"""
+    def list_product_details(self, pid):
+        details = []
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
         c.execute('''
-           SELECT pr.name, st.name
-           FROM products pr, stores st, carries ca
-           WHERE pr.name LIKE ('%' || ? || '%') and 
-           pr.pid=ca.pid and 
-           st.sid=ca.sid
-           ''', (key,))
-        res = c.fetchall()
-        print(res)
+                  SELECT pr.pid, pr.name, pr.unit, pr.cat
+                  FROM products pr
+                  WHERE pr.pid = ?
+              ''',(pid,))
+        res = c.fetchone()
         for i in res:
-            sub_res = [i,1]
-            if i in chain.from_iterable(term_matches):
-                term_matches.append(sub_res)
-            else:
-                term_matches[term_matches.index(i)][1] += 1
+            details.append(i)
+        print(details)
+        c.execute('''
+                 SELECT st.name, ca.uprice, ca.qty, sub.ordernum
+                 FROM carries ca
+                 INNER JOIN stores st ON ca.sid = st.sid
+                 INNER JOIN products pr ON ca.pid = pr.pid
+                 INNER JOIN (SELECT ol.sid as name, COUNT(*) as ordernum
+                            FROM olines ol
+                            INNER JOIN orders od ON ol.oid=od.oid
+                            INNER JOIN products pr ON ol.pid=pr.pid
+                            WHERE pr.pid = ?
+                            and ((od.odate > DATETIME('now', '-7 days'))=1) GROUP BY ol.sid) sub ON ca.sid = sub.name
+                 WHERE pr.pid = ?
+                 ORDER BY ca.qty DESC, ca.uprice ASC
+                 
+             ''', (pid,pid))
+        res = c.fetchall()
+        details.append(res)
+        print(details)
 
-"""
+        conn.commit()
+        conn.close()
 
+    def list_details(self, result_item):
+       # for search_term in search_terms_list:
+       #      for names in flat_list:
+        print(result_item)
+        product_info = []
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute('''
+                    SELECT pr.pid, pr.name, pr.unit, st.name
+                    FROM carries ca
+                    INNER JOIN products pr  ON ca.pid=pr.pid
+                    INNER JOIN stores st ON ca.sid=st.sid
+                    WHERE pr.name=? and
+                    st.sid=ca.sid and
+                    st.name=?
+                    ''', (result_item[0], result_item[1]))
+        res = c.fetchone()
+        for i in res:
+            product_info.append(i)
 
-"""
-    where_clause = ''
-    for i in search_terms_list:
-        where_clause += " pr.name LIKE ('%' ||'"+i+"'|| '%') OR"
+        c.execute('''
+                    SELECT count(ca.pid), min(ca.uprice)
+                    FROM carries ca
+                    INNER JOIN products pr  ON ca.pid=pr.pid
+                    INNER JOIN stores st ON ca.sid=st.sid
+                    WHERE pr.name=?
+                    ''', (result_item[0],))
+        res = c.fetchone()
+        for i in res:
+            product_info.append(i)
+        print(product_info)
 
-    #print(where_clause[:-2])
-    query = "SELECT pr.name, st.name, count(*) as matches FROM products pr INNER JOIN carries ca ON pr.pid = ca.pid INNER JOIN stores st  ON ca.sid = st.sid WHERE" +where_clause[:-2] +"GROUP BY pr.name, st.name ORDER BY matches DESC"
-    print(query)
-    c.execute(query)
-    res = c.fetchall()
+        c.execute('''
+                   SELECT count(ca.pid), min(ca.uprice)
+                   FROM carries ca
+                   INNER JOIN products pr  ON ca.pid=pr.pid
+                   INNER JOIN stores st ON ca.sid=st.sid
+                   WHERE pr.name=? and
+                   ca.qty > 0
+                   ''', (result_item[0],))
+        res = c.fetchone()
+        for i in res:
+            product_info.append(i)
+        print(product_info)
 
-    for i in res:
-        found_terms.append(i)
-    print(found_terms)
-    found_terms.sort()
-"""
+        c.execute('''
+                SELECT count(od.odate)
+                FROM orders od
+                INNER JOIN olines ol  ON od.oid=ol.oid
+                INNER JOIN products pr  ON ol.pid=pr.pid
+                WHERE pr.name=? and
+                ((od.odate > datetime('now',"-7 days"))=1)
+                ''', (result_item[0],))
+        res = c.fetchone()
+        for i in res:
+            product_info.append(i)
+        print(product_info)
+        conn.commit()
+        conn.close()
+        return(product_info)
+
+    def search_Items(self, search_terms):
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+
+        search_terms_list=search_terms.split()
+        #print(search_terms_list)
+        query = 'SELECT pname , sname, count(*) as matches FROM('
+        for key in search_terms_list:
+            #print(key)
+            query +=" SELECT pr.name as pname, st.name as sname FROM products pr INNER JOIN carries ca ON pr.pid = ca.pid INNER JOIN stores st  ON ca.sid = st.sid WHERE pr.name LIKE ('%' ||'" + key + "'|| '%') UNION ALL"
+
+        query = query[:-9] + ')GROUP BY pname, sname ORDER BY  matches DESC, sname DESC'
+        #print(query)
+        c.execute(query)
+        res = c.fetchall()
+        result_list =[]
+        for i in res:
+            result_list.append(i)
+        conn.commit()
+        conn.close()
+        return result_list
 
 
 
 if __name__ == "__main__":
-    search_terms=input("key words: ")
-    search_Items(search_terms)
+    newsearch = Search_products('milk cat lettuce')
+    newsearch.list_product_details("p1")
