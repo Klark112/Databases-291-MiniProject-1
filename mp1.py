@@ -185,15 +185,12 @@ def listItems(self, userID, listBasket):
                       {"qt":listBasket[n][2], "sd":listBasket[n][0], "pd":listBasket[n][1]})
             conn.commit()
             
-    c.execute("""SELECT oid FROM orders""")
+    c.execute("""SELECT MAX(oid) FROM orders""")
     conn.commit()
     result = c.fetchall()
 
     high = result[0]  
-    for each in result:
-        if high < each:
-            high = each
-
+    print(high)
     newOid = high[0] + 1  
     #for getting the users address
     c.execute("""SELECT c1.address FROM customers c1 WHERE c1.cid =:useID""",{"useID":userID})
