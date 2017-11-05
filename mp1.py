@@ -4,6 +4,7 @@
 
 import sqlite3
 import tkinter as tk
+import time
 from tkinter import messagebox
 from mp1_app import *
 from mp1_models import *
@@ -158,3 +159,58 @@ def StockPrice(sid, pid, price):
               {"pr":price, "sd":sid, "pd":pid})
     conn.commit()
     conn.close()    
+    
+def listItems(self, userID, listBasket):
+    for n in range(len(listBasket)):
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()        
+        c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
+                 {"sd":listBasket[n][0], "pd":listBasket[n][1]})
+        conn.commit()
+        res = c.fetchall()
+        myinfo = None
+        if(listBasket[n][2]>res[0][0]):
+            mylabel = Label(self, text = "Quantity too High.\nChange Quantity or Delete", font = ("Verdana", 8))
+            mylabel.pack()
+            upInfo = Entry(self)
+            upInfo.pack()
+            updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, n, upInfo.get()))
+            updateButton.pack()
+            deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, n))
+            deleteButton.pack()            
+        else:
+            mylabel2 = Label(self, text = "Order Placed", font = ("Verdana", 9))
+            mylabel2.pack()             
+            #update the table after placing an order
+            c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
+                      {"qt":listBasket[n][2], "sd":listBasket[n][0], "pd":listBasket[n][1]})
+            conn.commit()
+            
+    c.execute("""SELECT oid FROM orders""")
+    conn.commit()
+    result = c.fetchall()
+
+    high = result[0]  
+    for each in result:
+        if high < each:
+            high = each
+
+    newOid = high[0] + 1  
+    #for getting the users address
+    c.execute("""SELECT c1.address FROM customers c1 WHERE c1.cid =:useID""",{"useID":userID})
+    conn.commit()
+    resultAddress = c.fetchone()
+    #for creating the dates
+    dates = time.strftime("%Y/%m/%d")
+    #generating a new order
+    c.execute("""INSERT INTO orders VALUES (:od, :cd, :date, :adr)""", 
+              {"od":newOid, "cd":userID, "date":dates, "adr":resultAddress[0]})
+    conn.commit()
+    
+def updateListBasket(self, userID, listBasket, n, upInfo):
+    listBasket[n][2] = int(upInfo)
+    listItems(self, userID, listBasket)
+    
+def deleteListBasket(self, userID, listBasket, n):
+    listBasket.pop(n)
+    listItems(self, userID, listBasket)
