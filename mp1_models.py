@@ -172,6 +172,18 @@ class Delivery():
             message = template.format(type(ex).__name__, ex.args)
             print(message)
 
+class Basket():
+    def __init__(self, items =[]):
+        self.items = items
+
+    def additem(self,item):
+        self.items.append(item)
+
+    def removeItem(self, item):
+        try:
+            self.items.remove(item)
+        except:
+            messagebox.showinfo("", "Item not in the list")
 
 class Oline():
     def __init__(self, oID,sID,pID,qty=0,uprice=0):

@@ -120,7 +120,7 @@ class Search_products():
         conn.close()
         return(product_info)
 
-    def search_Items(self, search_terms):
+    def search_Items(self, search_terms):   # Searches for all matche for each word inside a single input String
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
 
