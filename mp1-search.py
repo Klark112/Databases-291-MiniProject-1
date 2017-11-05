@@ -23,7 +23,7 @@ def search_Items(search_terms):
     #get search terms
 
     search_terms_list=search_terms.split()
-    found_terms={}
+    term_matches={}
     print(search_terms_list)
 
     for i in search_terms_list:
