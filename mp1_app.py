@@ -707,7 +707,6 @@ class ListOrderPage(tk.Tk):
             w = evt.widget
             index = int(w.curselection()[0])
             value = w.get(index)
-            print(value)
             detail_window = OrderDetailWindow(value)
             detail_window.geometry("320x720")
             detail_window.mainloop()
@@ -719,12 +718,12 @@ class OrderDetailWindow(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Tk.wm_title(self, "Order details")
         self.input = input
-        self.oid = input[0]
-        self.details = show_details(mp1_globals.__USERID__,input[0])
-        print(self.oid)
+        #print(self.input[0])
+        self.userID = mp1_globals.__USERID__
+        self.details = show_details(self.userID, self.input[0])
+        olines = self.details[4]
         titlelabel = ttk.Label(self, text="Order #"+str(input[0])+" Details", font=LARGE_FONT)
         titlelabel.pack()
-
         delLabel = ttk.Label(self, text="Deliver Info:", font=LARGE_FONT)       #[Tracking no., pickuptime, drop off, address,[list of olines in order]]
         delLabel.pack()
         tno = ttk.Label(self, text="Tracking #: "+str(self.details[0]), font=SMALL_FONT)  # Tracking no. pickuptime, drop off, address
@@ -738,11 +737,18 @@ class OrderDetailWindow(tk.Tk):
         ad = ttk.Label(self, text="Address: " + str(self.details[3]),
                        font=SMALL_FONT)
         ad.pack()
-
-        #List of attached olines to this oid
-
+        ol = ttk.Label(self, text="Olines: " + str(self.details[3]),
+                       font=SMALL_FONT)
+        ol.pack()
+        resListBox = Listbox(self, width=100, height=5)
+        resListBox.pack()
+        #print("2",olines)
+        for i in olines:
+            print(i)
+            resListBox.insert(0,i)
 
         ReturnButton = ttk.Button(self, text="Close",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
+
 

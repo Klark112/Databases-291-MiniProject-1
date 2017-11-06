@@ -262,21 +262,31 @@ def list_orders(username):
     return list2
 
 def show_details(username, order_id):  # get oid from list_objects[0]
+    #print("function called")
+    #print(username, order_id)
     DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
+    res = []
     c = conn.cursor()
     c.execute('''
    SELECT de.trackingno, de.pickUpTime, de.dropOffTime, od.address
    FROM deliveries de, orders od
    WHERE de.oid=od.oid and od.cid=:un and od.oid=:oi
    ''', {"un": username, "oi": order_id})
-    list_delivery = c.fetchall()
+    list_delivery = c.fetchone()
+    for i in list_delivery:
+        res.append(i)
+    # print(list_delivery)
     c.execute('''
    SELECT ol.sid, st.name, ol.pid, pr.name, ol.qty, pr.unit ,ol.uprice
    FROM olines ol, stores st, products pr
    WHERE ol.sid=st.sid and ol.pid=pr.pid and ol.oid=:oi''', {"oi": order_id})
     list_details = c.fetchall()
-    list_delivery.append(list_details)
+    # print(list_details)
+    #for i in list_details:
+    #    list_details.append(i)
+    res.append(list_details)
     conn.commit()
     conn.close()
-    return list_delivery
+    # print(res)
+    return res
