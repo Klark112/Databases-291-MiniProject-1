@@ -12,5 +12,6 @@ def main():
     app.mainloop()
     print(mp1_globals.__DBNAME__)
 
+
 if __name__ == "__main__":
     main()

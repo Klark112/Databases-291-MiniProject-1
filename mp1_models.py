@@ -185,7 +185,7 @@ class Delivery():
             message = template.format(type(ex).__name__, ex.args)
             print(message)
 
-class Basket():
+class Basket(): # Format of Basket: [[sid, pid, qty],['''],...]
     def __init__(self, items =[]):
         self.items = items
 
@@ -204,6 +204,34 @@ class Basket():
     def clearBasket(self):
         for i in self.items:
             i.pop()
+
+    def checkInvalidTerms(self):
+        DATABASE = mp1_globals.__DBNAME__
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            invalterms = []
+            for item in self.items:
+                c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
+                          {"sd": item[0], "pd": item[1]})
+                conn.commit()
+                res = c.fetchone()
+                if (item[2] > res[0]):    # term is invalid add to inval terms [pid, max qty]
+                    invalterms.append([item[1], res[0]])
+            conn.commit()
+            conn.close()
+            #print(invalterms)
+            return invalterms
+
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR checking valid basket items")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
 
 class Oline():
     def __init__(self, oID,sID,pID,qty=0,uprice=0):

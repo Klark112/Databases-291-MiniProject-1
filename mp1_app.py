@@ -16,7 +16,7 @@ SMALL_FONT = ("Veranda", 9)
 
 globalUserID = ""
 n = 0
-
+__USERBASKET__ = None
 
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -83,10 +83,11 @@ class StartPage(tk.Frame):
                 controller.show_frame(UserDashBoard)
                 global globalUserID
                 globalUserID = username
-                global globalUserBasket
-                globalUserBasket = Basket()
+                global __USERBASKET__
+                __USERBASKET__ = Basket()
         else:
             messagebox.showerror("Problem", "Invalid characters")
+
 
 
 # User Dashboard after successful login
@@ -107,24 +108,23 @@ class UserDashBoard(tk.Frame):
                              command=lambda: self.ListOrders())
         Button3.pack()
 
-        viewBasketButton = ttk.Button(self, text="Place an order",
-                             command=lambda: controller.show_frame(placeOrder))
+        viewBasketButton = ttk.Button(self, text="View Basket",
+                             command=lambda: self.displayBasket())
         viewBasketButton.pack()
 
         logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: self.logout(controller))
         logoutButton.pack()
 
-    def PlaceAnOrder(self):
-        print("2")
+    def ListOrders(self):
         return
 
-    def ListOrders(self):
-        print("3")
+    def displayBasket(self):
         return
+
     def logout(self,controller):
-        global globalUserBasket
-        globalUserBasket.clearBasket()
+        global __USERBASKET__
+        __USERBASKET__.clearBasket()
         controller.show_frame(StartPage)
 
 class searchProducts(tk.Frame):
@@ -144,11 +144,13 @@ class searchProducts(tk.Frame):
 
     def openSearch(self,termString):
         # print(termString)
-        searchResult = Search_products(termString)
-        result_window = SearchResultWindow(termString, searchResult.getFormattedResultList())
-        result_window.geometry("800x270")
-        result_window.mainloop()
-
+        if(termString!= ''):
+            searchResult = Search_products(termString)
+            result_window = SearchResultWindow(termString, searchResult.getFormattedResultList())
+            result_window.geometry("800x270")
+            result_window.mainloop()
+        else:
+            messagebox.showinfo("No results", "Please enter key words")
 
 class SearchResultWindow(tk.Tk):
     start_index = 0  # tracker for result list
@@ -260,12 +262,12 @@ class addBasketItemView(tk.Tk):
 
     def addItem(self,qty): #item:[sid, pid, qty]
         try:
-            global globalUserBasket
+            global __USERBASKET__
             item = [int(self.sid),self.pid,int(qty)]
-            globalUserBasket.additem(item)
+            __USERBASKET__.additem(item)
             print(item)
-            messagebox.showinfo("Item Added","Item has been added")
-            for i in globalUserBasket.getitems():
+            messagebox.showinfo("Item Added", self.pid+ " has been added to you basket.\n Qty: "+ str(qty))
+            for i in __USERBASKET__.getitems():
                 print(i)
             self.destroy()
         except:
@@ -539,9 +541,41 @@ class placeOrder(tk.Frame):
         tk.Frame.__init__(self, parent)   
         basketItem = Label(self, text = "Items in Basket", font = ("Verdana", 12))
         basketItem.pack()
-        listBasket = [[1, 'p1', 4],[2, 'p4', 4],[1, 'p1', 5], [1, 'p2', 9]] #sid, pid, qty
-        
-        checkQuantity = ttk.Button(self, text="Check Quantity", command=lambda: listItems(self, globalUserID, listBasket))
+        # listBasket = [[1, 'p1', 4],[2, 'p4', 4],[1, 'p1', 5], [1, 'p2', 9]] #sid, pid, qty
+        # listBasket = __USERBASKET__
+        checkQuantity = ttk.Button(self, text="Check Quantity", command=lambda: self.setOrder())
         checkQuantity.pack()
+        buttonReturn = ttk.Button(self, text="Return",
+                                  command=lambda: controller.show_frame(UserDashBoard))
+        buttonReturn.pack()
 
+    def setOrder(self):
+        setorderwindow = orderSetUp()
+        setorderwindow.geometry("240x480")
+        setorderwindow.mainloop()
 
+class orderSetUp(tk.Tk): #New Window to set up order
+    def __init__(self, *args, **kwargs):
+        self.basket = __USERBASKET__
+        self.uid = globalUserID
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Setup Order")
+        label = ttk.Label(self, text="Order Items", font=LARGE_FONT)
+        label.pack()
+        itemListBox = Listbox(self)
+        itemListBox.pack()
+        for item in self.basket.getitems():
+            itemListBox.insert(END, item)
+        invalterms = self.basket.checkInvalidTerms()
+        #print(invalterms)
+        for i in invalterms:
+            self.displayWarning(i)
+        ReturnButton = ttk.Button(self, text="Close",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
+
+    def displayWarning(self, input): # input:[pid, max_qty]
+        warningLabel = ttk.Label(self,text="WARNING: qty for product, "+input[0]+" is too high!\n   Max qty: "+str(input[1])+"\n   Order cannot be processed.")
+        warningLabel.pack()
+
+    #TODO: onlick for listbox items opens new window where user can edit the qty of the basket item
