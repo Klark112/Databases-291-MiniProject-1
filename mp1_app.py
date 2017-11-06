@@ -542,9 +542,10 @@ class placeOrder(tk.Frame):
         basketItem = Label(self, text = "Items in Basket", font = ("Verdana", 12))
         basketItem.pack()
         # listBasket = [[1, 'p1', 4],[2, 'p4', 4],[1, 'p1', 5], [1, 'p2', 9]] #sid, pid, qty
-        # listBasket = __USERBASKET__
-        checkQuantity = ttk.Button(self, text="Check Quantity", command=lambda: self.setOrder())
+
+        checkQuantity = ttk.Button(self, text="Check Order", command=lambda: self.setOrder())
         checkQuantity.pack()
+
         buttonReturn = ttk.Button(self, text="Return",
                                   command=lambda: controller.show_frame(UserDashBoard))
         buttonReturn.pack()
@@ -564,18 +565,96 @@ class orderSetUp(tk.Tk): #New Window to set up order
         label.pack()
         itemListBox = Listbox(self)
         itemListBox.pack()
+        itemListBox.bind('<<ListboxSelect>>', self.onSelect)
         for item in self.basket.getitems():
             itemListBox.insert(END, item)
         invalterms = self.basket.checkInvalidTerms()
         #print(invalterms)
-        for i in invalterms:
-            self.displayWarning(i)
+        if self.basket.getitems(): #Check if items are in basket
+            if not invalterms: # If there are no invalid items
+                conf_label = ttk.Label(self, text= "No problems detected.\n Proceed with placing order.", font=SMALL_FONT)
+                conf_label.pack()
+                conf_button = ttk.Button(self, text="Confirm", command=lambda:self.confirmOrder())
+                conf_button.pack()
+            else:
+                for i in invalterms:
+                    self.displayWarning(i)
+        else:
+            label = ttk.Label(self, text="No items in basket.", font=SMALL_FONT)
+            label.pack()
         ReturnButton = ttk.Button(self, text="Close",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
 
+    def onSelect(self,evt):
+        try:
+            w = evt.widget
+            index = int(w.curselection()[0])
+            value = w.get(index)
+            print(value, index)
+            update_window = UpdateBasketItemWIndow(index, value[2])
+            update_window.geometry("270x480")
+            update_window.mainloop()
+        except:
+            pass
+
     def displayWarning(self, input): # input:[pid, max_qty]
-        warningLabel = ttk.Label(self,text="WARNING: qty for product, "+input[0]+" is too high!\n   Max qty: "+str(input[1])+"\n   Order cannot be processed.")
+        warningLabel = ttk.Label(self,text="WARNING:\n Qty for product, ["+str(input[0])+", "+str(input[1])+"] is too high!\n   Max qty: "+str(input[2])+"\n   Order cannot be processed.")
         warningLabel.pack()
 
-    #TODO: onlick for listbox items opens new window where user can edit the qty of the basket item
+    def confirmOrder(self): # Function is called whenever the items in the user basket are all okay
+        global __USERBASKET__
+
+
+class UpdateBasketItemWIndow(tk.Tk):
+    def __init__(self, index,curqty, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+        self.index = index
+        tk.Tk.wm_title(self, "Update Item")
+        label = ttk.Label(self, text="Update Item", font=LARGE_FONT)
+        label.pack(side="top")
+        newQtyLabel = ttk.Label(self, text="Change qty: ", font=SMALL_FONT)
+        newQtyLabel.pack()
+        v = StringVar(self, str(curqty))
+        qtyEntry = ttk.Entry(self, width=8,textvariable = v)
+        qtyEntry.pack()
+        UpdateButton = ttk.Button(self, text="Update",
+                                  command=lambda: self.updateBasketItem(self.index,qtyEntry.get()))
+        UpdateButton.pack()
+        DeleteButton = ttk.Button(self, text="Delete Item",
+                                  command=lambda: self.deleteBasketItem(self.index))
+        DeleteButton.pack()
+        ReturnButton = ttk.Button(self, text="Close",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
+
+    def updateBasketItem(self, index, newqty):
+        global __USERBASKET__
+        newitem = __USERBASKET__.getitems()[index]
+        try:
+            newitem[2] = int(newqty)
+            __USERBASKET__.removeItem(index)
+            __USERBASKET__.getitems().insert(index,newitem)
+            messagebox.showinfo("Item Updated",
+                                "Item has been updated! Restart order.")
+        except Exception as ex:
+            messagebox.showerror("Error", "Something went wrong when updating")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
+        self.destroy()
+
+    def deleteBasketItem(self, index):
+        try:
+            global __USERBASKET__
+            __USERBASKET__.removeItem(index)
+            messagebox.showinfo("Item Removed",
+                                "Item has been removed! Restart order.")
+        except Exception as ex:
+            messagebox.showerror("Error", "Something went wrong when updating")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+
+        self.destroy()

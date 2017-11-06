@@ -195,9 +195,9 @@ class Basket(): # Format of Basket: [[sid, pid, qty],['''],...]
     def getitems(self):
         return self.items
 
-    def removeItem(self, item):
+    def removeItem(self, index):
         try:
-            self.items.remove(item)
+            self.items.pop(index)
         except:
             messagebox.showinfo("", "Item not in the list")
 
@@ -216,8 +216,8 @@ class Basket(): # Format of Basket: [[sid, pid, qty],['''],...]
                           {"sd": item[0], "pd": item[1]})
                 conn.commit()
                 res = c.fetchone()
-                if (item[2] > res[0]):    # term is invalid add to inval terms [pid, max qty]
-                    invalterms.append([item[1], res[0]])
+                if (int(item[2]) > int(res[0])):    # term is invalid add to inval terms [sid, pid, max qty]
+                    invalterms.append([item[0],item[1], res[0]])
             conn.commit()
             conn.close()
             #print(invalterms)
