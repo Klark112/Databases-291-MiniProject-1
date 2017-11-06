@@ -604,6 +604,9 @@ class orderSetUp(tk.Tk): #New Window to set up order
 
     def confirmOrder(self): # Function is called whenever the items in the user basket are all okay
         global __USERBASKET__
+        process_basket = __USERBASKET__
+        processOrder(process_basket.getitems())
+        __USERBASKET__.clearBasket()
 
 
 class UpdateBasketItemWIndow(tk.Tk):
