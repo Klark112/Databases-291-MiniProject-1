@@ -678,8 +678,17 @@ class ListOrderPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="Your Orders", font=LARGE_FONT)
         label.pack(side="top")
-
-        list_of_orders = list_objects(mp1_globals.__USERID__)
+        #list_of_orders = []
+        #list_of_orders = lambda:list_objects(mp1_globals.__USERID__)
+        #print(list_of_orders)
+        
+        trigger = ttk.Button(self, text="Trigger",command=lambda: self.printListOrders(controller, list_objects(mp1_globals.__USERID__)))
+        trigger.pack(side=BOTTOM)        
+        
+    def printListOrders(self, controller, list_of_orders):
+        #print(list_of_orders)
+        #print("~~~~~")
+    
         list_five_counter = 0  # need to pass this with each call
         for i in list_of_orders[(list_five_counter * 5):min(len(list_of_orders), ((list_five_counter * 5) + 5))]:
             oidLabel = ttk.Label(self, text=str(i[0]))
@@ -689,12 +698,20 @@ class ListOrderPage(tk.Frame):
             detail_button = ttk.Button(self, text="Show Details",
                                        command=lambda: controller.show_frame(ShowDetailsPage))
 
-            grid_row = list_of_orders.index(i)
-            oidLabel.grid(row=grid_row, column=0)
-            odateLabel.grid(row=grid_row, column=1)
-            num_items_Label.grid(row=grid_row, column=2)
-            total_cost_Label.grid(row=grid_row, column=3)
-            detail_button.grid(row=grid_row, column=4)
+            
+            oidLabel.pack()
+            odateLabel.pack()
+            num_items_Label.pack()
+            total_cost_Label.pack()
+            detail_button.pack()
+            
+
+            #grid_row = list_of_orders.index(i)
+            #oidLabel.grid(row=grid_row, column=0)
+            #odateLabel.grid(row=grid_row, column=1)
+            #num_items_Label.grid(row=grid_row, column=2)
+            #total_cost_Label.grid(row=grid_row, column=3)
+            #detail_button.grid(row=grid_row, column=4)
 
         if (list_five_counter > 0):
             prev_five_button = ttk.Button(self, text="Prev. 5",
@@ -706,9 +723,9 @@ class ListOrderPage(tk.Frame):
                                           command=lambda: controller.show_frame(ListOrderPage, (list_five_counter + 1)))
             next_five_button.pack(side=BOTTOM)
 
-        back_button = ttk.Button(self, text="Next. 5",
+        back_button = ttk.Button(self, text="Return",
                                  command=lambda: controller.show_frame(UserDashBoard))
         back_button.pack(side=BOTTOM)
 
-    def increment_qty(self, list_five_counter):
-        return 0
+    #def increment_qty(self, list_five_counter):
+        #return 0

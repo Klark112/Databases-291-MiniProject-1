@@ -232,11 +232,13 @@ def list_objects(username):
     c.execute("SELECT ol.oid, od.odate, ol.qty, ol.uprice from olines ol,orders od where ol.oid=od.oid and od.cid=:un",
               {"un": username})
     list_oo = c.fetchall()
+    #print(list_oo)
     list_total = []
     list_order_tuple = [0, '', 0, 0]  # order id, order date, the number of products ordered and the total price
     total_qty = 0
     current_oid = -1
     for i in list_oo:
+        #print(i)
         if (i[0] != current_oid):
             list_total.append(list_order_tuple[:])
             list_order_tuple[0] = i[0]
@@ -250,28 +252,32 @@ def list_objects(username):
             list_order_tuple[3] += i[2] * i[3]
 
     list_total.append(list_order_tuple[:])
-
     conn.commit()
     conn.close()
-    return list_total[1:]
+    list2 = []
+    for t in list_total[1:]:
+        list2.append(t)
+        
+    #print(list2)
+    return list2
 
 
-def show_details(username, order_id):  # get oid from list_objects[0]
-    DATABASE = mp1_globals.__DBNAME__
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute('''
-   SELECT de.trackingno, de.pickUpTime, de.dropOffTime, od.address
-   FROM deliveries de, orders od
-   WHERE de.oid=od.oid and od.cid=:un and od.oid=:oi
-   ''', {"un": username, "oi": order_id})
-    list_delivery = c.fetchall()
-    c.execute('''
-   SELECT ol.sid, st.name, ol.pid, pr.name, ol.qty, pr.unit ,ol.uprice
-   FROM olines ol, stores st, products pr
-   WHERE ol.sid=st.sid and ol.pid=pr.pid and ol.oid=:oi''', {"oi": order_id})
-    list_details = c.fetchall()
-    list_delivery.append(list_details)
-    conn.commit()
-    conn.close()
-    return list_delivery
+#def show_details(username, order_id):  # get oid from list_objects[0]
+    #DATABASE = mp1_globals.__DBNAME__
+    #conn = sqlite3.connect(DATABASE)
+    #c = conn.cursor()
+    #c.execute('''
+   #SELECT de.trackingno, de.pickUpTime, de.dropOffTime, od.address
+   #FROM deliveries de, orders od
+   #WHERE de.oid=od.oid and od.cid=:un and od.oid=:oi
+   #''', {"un": username, "oi": order_id})
+    #list_delivery = c.fetchall()
+    #c.execute('''
+   #SELECT ol.sid, st.name, ol.pid, pr.name, ol.qty, pr.unit ,ol.uprice
+   #FROM olines ol, stores st, products pr
+   #WHERE ol.sid=st.sid and ol.pid=pr.pid and ol.oid=:oi''', {"oi": order_id})
+    #list_details = c.fetchall()
+    #list_delivery.append(list_details)
+    #conn.commit()
+    #conn.close()
+    #return list_delivery
