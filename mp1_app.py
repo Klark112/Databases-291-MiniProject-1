@@ -7,6 +7,7 @@ from tkinter import ttk
 from tkinter import *
 from mp1 import *
 from mp1_models import *
+from mp1_search import *
 from ttkcal import *
 
 LARGE_FONT = ("Veranda", 18)
@@ -27,7 +28,7 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock, placeOrder]
+        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock, placeOrder, searchProducts]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -91,7 +92,7 @@ class UserDashBoard(tk.Frame):
         label.pack(pady=10, padx=10)
 
         Button1 = ttk.Button(self, text="Search Products",
-                             command=lambda: self.SearchForProducts())
+                             command=lambda: controller.show_frame(searchProducts))
         Button1.pack()
 
         Button2 = ttk.Button(self, text="Place an order",
@@ -104,10 +105,6 @@ class UserDashBoard(tk.Frame):
                              command=lambda: controller.show_frame(StartPage))
         logoutButton.pack()
 
-    def SearchForProducts(self):
-        print("1")
-        return
-
     def PlaceAnOrder(self):
         print("2")
         return
@@ -115,6 +112,74 @@ class UserDashBoard(tk.Frame):
     def ListOrders(self):
         print("3")
         return
+
+class searchProducts(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Search Products", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+        searchEntry = ttk.Entry(self, width=20)
+        searchEntry.pack()
+        searchButton = ttk.Button(self, text = "Find",
+                                  command=lambda: self.openSearch(searchEntry.get()))
+        searchButton.pack()
+
+    def openSearch(self,termString):
+        # print(termString)
+        searchResult = Search_products(termString)
+        result_window = SearchResultWindow(termString, searchResult.getFormattedResultList())
+        result_window.geometry("480x480")
+        result_window.mainloop()
+
+
+class SearchResultWindow(tk.Tk):
+    start_index = 0  # tracker for result list
+    def __init__(self,termString,result_list, *args, **kwargs):
+        self.result_list =result_list
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Search Results")
+        label = ttk.Label(self, text="Search Results", font=LARGE_FONT)
+        label.pack(side="top")
+        label = ttk.Label(self, text="Searched: '"+termString+"'", font=SMALL_FONT)
+        label.pack(side="top")
+        self.resListBox = Listbox(self, width=80,height=5, selectmode=EXTENDED)
+        self.resListBox.pack()
+        self.resListBox.bind('<<ListboxSelect>>',self.onSelect)
+        for i in range(self.start_index,self.start_index+5):
+            try:
+                item = result_list[i]
+                self.resListBox.insert(END, item)
+            except:
+                pass
+        if (len(result_list) > 5):
+            nextButton = ttk.Button(self, text="Next", command=lambda:self.updateIndecies(5))
+            nextButton.pack()
+            prevButton = ttk.Button(self, text="Prev", command=lambda: self.updateIndecies(-5))
+            prevButton.pack()
+
+        ReturnButton = ttk.Button(self, text="Return",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
+
+    def updateIndecies(self, d_i):
+        cur_index = self.start_index
+        self.start_index += d_i
+        if(self.start_index > len(self.result_list) or self.start_index < 0):
+            self.start_index = cur_index
+        self.resListBox.delete(0,END)
+        for i in range(self.start_index, self.start_index + 5):
+            try:
+                item = [self.result_list[i][0], self.result_list[i][1]]
+                self.resListBox.insert(END, item)
+            except:
+                pass
+
+    def onSelect(self,evt):
+        w = evt.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        print('You selected item %d: "%s"' % (index, value))
 
 
 # Registration Page for Regular Users
@@ -224,7 +289,6 @@ class AgentDashBoard(tk.Frame):
         update_window = UpdateDeliveryWIndow()
         update_window.geometry("270x480")
         update_window.mainloop()
-        return
 
 
 class UpdateDeliveryWIndow(tk.Tk):
@@ -378,6 +442,7 @@ class Stock(tk.Frame):
         else:
             mylabel = Label(self, text = "Store Not Present", font = ("Verdana", 12))
             mylabel.pack()
+
 
 class placeOrder(tk.Frame):
     def __init__(self, parent, controller):

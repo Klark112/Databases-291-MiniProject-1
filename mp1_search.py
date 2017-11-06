@@ -62,19 +62,16 @@ class Search_products():
     def list_details(self, result_item):
        # for search_term in search_terms_list:
        #      for names in flat_list:
-        print(result_item)
+       # print(result_item)
         product_info = []
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
         c.execute('''
-                    SELECT pr.pid, pr.name, pr.unit, st.name
+                    SELECT pr.pid, pr.name, pr.unit
                     FROM carries ca
                     INNER JOIN products pr  ON ca.pid=pr.pid
-                    INNER JOIN stores st ON ca.sid=st.sid
-                    WHERE pr.name=? and
-                    st.sid=ca.sid and
-                    st.name=?
-                    ''', (result_item[0], result_item[1]))
+                    WHERE pr.name=?
+                    ''', (result_item[0],))
         res = c.fetchone()
         for i in res:
             product_info.append(i)
@@ -89,7 +86,7 @@ class Search_products():
         res = c.fetchone()
         for i in res:
             product_info.append(i)
-        print(product_info)
+       # print(product_info)
 
         c.execute('''
                    SELECT count(ca.pid), min(ca.uprice)
@@ -102,7 +99,7 @@ class Search_products():
         res = c.fetchone()
         for i in res:
             product_info.append(i)
-        print(product_info)
+       # print(product_info)
 
         c.execute('''
                 SELECT count(od.odate)
@@ -115,23 +112,23 @@ class Search_products():
         res = c.fetchone()
         for i in res:
             product_info.append(i)
-        print(product_info)
+       # print(product_info)
         conn.commit()
         conn.close()
         return(product_info)
 
-    def search_Items(self, search_terms):   # Searches for all matche for each word inside a single input String
+    def search_Items(self, search_terms):   # Searches for all matches for each word inside a single input String
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
 
         search_terms_list=search_terms.split()
         #print(search_terms_list)
-        query = 'SELECT pname , sname, count(*) as matches FROM('
+        query = 'SELECT pname, count(*) as matches FROM('
         for key in search_terms_list:
             #print(key)
-            query +=" SELECT pr.name as pname, st.name as sname FROM products pr INNER JOIN carries ca ON pr.pid = ca.pid INNER JOIN stores st  ON ca.sid = st.sid WHERE pr.name LIKE ('%' ||'" + key + "'|| '%') UNION ALL"
+            query +=" SELECT pr.name as pname, st.name as sname FROM products pr INNER JOIN carries ca ON pr.pid = ca.pid INNER JOIN stores st  ON ca.sid = st.sid WHERE pr.name LIKE ('%' ||'" + key + "'|| '%') or st.name LIKE ('%' ||'" + key + "'|| '%') UNION ALL"
 
-        query = query[:-9] + ')GROUP BY pname, sname ORDER BY  matches DESC, sname DESC'
+        query = query[:-9] + ')GROUP BY pname ORDER BY  matches DESC'
         #print(query)
         c.execute(query)
         res = c.fetchall()
@@ -142,8 +139,21 @@ class Search_products():
         conn.close()
         return result_list
 
+    def getFormattedResultList(self):
+        result_list = []
+        for i in self.results:
+            det = self.list_details(i)
+            formDet = [det[0],["Name: "+det[1],"Unit: "+det[2],"# Stores: "+str(det[3]),"Min Price: $"+str(det[4]),"# Stores in Stock: "+str(det[5]),"Min Price (in Stock): $"+str(det[6]),"# Orders: "+str(det[7])]]
+            print(det)
+            result_list.append(formDet)
+        return result_list
 
 
-if __name__ == "__main__":
-    newsearch = Search_products('milk cat lettuce')
-    newsearch.list_product_details("p1")
+#if __name__ == "__main__":
+   # newsearch = Search_products('Walmart milk cat 4 1 food')
+    # for i in newsearch.results:
+    #   print(i)
+
+   # res = newsearch.getFormattedResultList()
+   # for i in res:
+   #     print("Display: ",i)
