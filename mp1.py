@@ -171,42 +171,35 @@ def StockPrice(sid, pid, price):
     conn.commit()
     conn.close()    
 
-def processOrder(basketItemList):
+def processOrder(basketItemList, userID):   #Function handles the data changes
     DATABASE = mp1_globals.__DBNAME__
-    userID = globalUserID
+
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     try:
-        # updating the Carries Table with the values of listBasket
-        for n in range(len(basketItemList)):
-            c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
-                      {"qt": basketItemList[n][2], "sd": basketItemList[n][0], "pd": basketItemList[n][1]})
-            conn.commit()
 
-            # Adding to olines
-            c.execute("""SELECT MAX(oid) FROM olines""")
-            conn.commit()
-            result = c.fetchall()
-
-            high = result[0]
-            newOidOlines = high[0] + 1
-
-            # Getting the uprice for the specific product of specific store
-            c.execute("""SELECT uprice FROM carries WHERE sid=:si AND pid=:pi""",
-                      {"si": basketItemList[n][0], "pi": basketItemList[n][1]})
-            res = c.fetchall()
-
-            # Inserting into olines these products to be ordered
-            c.execute("""INSERT INTO olines VALUES (:od, :sd, :pd, :qy, :upr)""",
-                      {"od": newOidOlines, "sd": basketItemList[n][0], "pd": basketItemList[n][1], "qy": basketItemList[n][2],
-                       "upr": res[0][0]})
-
-            # creating a new order for all these products
         c.execute("""SELECT MAX(oid) FROM orders""")
         conn.commit()
         result = c.fetchall()
         high = result[0]
         newOid = high[0] + 1
+
+        for item in basketItemList:
+            # updating the Carries Table with the values of listBasket
+            c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
+                      {"qt": item[2], "sd": item[0], "pd": item[1]})
+            conn.commit()
+
+            # Getting the uprice for the specific product of specific store
+            c.execute("""SELECT uprice FROM carries WHERE sid=:si AND pid=:pi""",
+                      {"si": item[0], "pi": item[1]})
+            res = c.fetchall()
+
+            # Inserting into olines these products to be ordered
+            c.execute("""INSERT INTO olines(oid, sid, pid, qty, uprice) VALUES (:od, :sd, :pd, :qy, :upr)""",
+                      {"od": newOid, "sd": item[0], "pd": item[1], "qy": item[2],
+                       "upr": res[0][0]})
+
 
         # for getting the users address
         c.execute("""SELECT c1.address FROM customers c1 WHERE c1.cid =:useID""", {"useID": userID})
@@ -221,7 +214,7 @@ def processOrder(basketItemList):
                   {"od": newOid, "cd": userID, "date": dates2, "adr": resultAddress2[0]})
         conn.commit()
         conn.close()
-        messagebox.showinfo("Order Placed", "Your order has been placed")
+        messagebox.showinfo("Order Placed", "Your order has been placed. \n Order ID: "+str(newOid))
 
     except Exception as ex:
         conn.rollback()

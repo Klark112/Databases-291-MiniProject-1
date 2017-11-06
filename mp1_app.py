@@ -1,6 +1,7 @@
 #CMPUT 291 Mini Project 1
 #Group Members: Justin Daza. Klark Bliss, Siddhart Khanna
-#Project GUI main code to run our application
+#Project GUI main code to run our application. Module contains front-end functionality dealing with how the data is displayed to the user.
+#
 
 import tkinter as tk
 from tkinter import ttk
@@ -605,7 +606,7 @@ class orderSetUp(tk.Tk): #New Window to set up order
     def confirmOrder(self): # Function is called whenever the items in the user basket are all okay
         global __USERBASKET__
         process_basket = __USERBASKET__
-        processOrder(process_basket.getitems())
+        processOrder(process_basket.getitems(), globalUserID)
         __USERBASKET__.clearBasket()
 
 
