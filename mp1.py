@@ -202,8 +202,8 @@ def cont(self, listBasket, k, userID):
     #If position [1,3] are incorrect and want to fix there quantity
     # the for loop just iterates through the list without caring if value was added
     for t in range(len(k)):
-        upInfo = Entry(self).grid(row = 0)
-        upInfo.grid(row=0, column = 1)
+        upInfo = Entry(self)
+        upInfo.pack()
         updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, t, upInfo.get(), k))
         updateButton.pack()   
         deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, t, k))
