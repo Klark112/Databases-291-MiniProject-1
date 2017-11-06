@@ -13,7 +13,8 @@ from ttkcal import *
 LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
 
-globalUserID = ""
+global globalUserID
+global globalUserBasket
 
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -80,6 +81,8 @@ class StartPage(tk.Frame):
                 controller.show_frame(UserDashBoard)
                 global globalUserID
                 globalUserID = username
+                global globalUserBasket
+                globalUserBasket = Basket()
         else:
             messagebox.showerror("Problem", "Invalid characters")
 
@@ -101,8 +104,13 @@ class UserDashBoard(tk.Frame):
         Button3 = ttk.Button(self, text="List Orders",
                              command=lambda: self.ListOrders())
         Button3.pack()
+
+        viewBasketButton = ttk.Button(self, text="Place an order",
+                             command=lambda: controller.show_frame(placeOrder))
+        viewBasketButton.pack()
+
         logoutButton = ttk.Button(self, text="Logout",
-                             command=lambda: controller.show_frame(StartPage))
+                             command=lambda: self.logout(controller))
         logoutButton.pack()
 
     def PlaceAnOrder(self):
@@ -112,6 +120,10 @@ class UserDashBoard(tk.Frame):
     def ListOrders(self):
         print("3")
         return
+    def logout(self,controller):
+        global globalUserBasket
+        globalUserBasket.clearBasket()
+        controller.show_frame(StartPage)
 
 class searchProducts(tk.Frame):
     def __init__(self, parent, controller):
@@ -124,6 +136,9 @@ class searchProducts(tk.Frame):
         searchButton = ttk.Button(self, text = "Find",
                                   command=lambda: self.openSearch(searchEntry.get()))
         searchButton.pack()
+        returnButton = ttk.Button(self, text="Return",
+                                      command=lambda: controller.show_frame(UserDashBoard))
+        returnButton.pack()
 
     def openSearch(self,termString):
         # print(termString)
@@ -158,7 +173,7 @@ class SearchResultWindow(tk.Tk):
             prevButton = ttk.Button(self, text="Prev", command=lambda: self.updateIndecies(-5))
             prevButton.pack()
 
-        ReturnButton = ttk.Button(self, text="Return",
+        ReturnButton = ttk.Button(self, text="Close",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
 
@@ -176,12 +191,15 @@ class SearchResultWindow(tk.Tk):
                 pass
 
     def onSelect(self,evt):
-        w = evt.widget
-        index = int(w.curselection()[0])
-        value = w.get(index)
-        detail_window = DetailWindow(value[0])
-        detail_window.geometry("320x480")
-        detail_window.mainloop()
+        try:
+            w = evt.widget
+            index = int(w.curselection()[0])
+            value = w.get(index)
+            detail_window = DetailWindow(value[0])
+            detail_window.geometry("320x480")
+            detail_window.mainloop()
+        except:
+            pass
 
 class DetailWindow(tk.Tk):
     def __init__(self, pid, *args, **kwargs):
@@ -197,15 +215,59 @@ class DetailWindow(tk.Tk):
         unitlabel.pack()
         catlabel = ttk.Label(self, text="Category: " + self.details[3], font=SMALL_FONT)
         catlabel.pack()
-        storeListLabel = ttk.Label(self, text="\nList of Stores:(Name/Price/Qty/# of Orders) ", font=SMALL_FONT)
+        storeListLabel = ttk.Label(self, text="\nList of Stores:(Name/id/Price/Qty/# of Orders) ", font=SMALL_FONT)
         storeListLabel.pack()
-        storeListBox = Listbox(self, width=30, selectmode=EXTENDED)
+        storeListBox = Listbox(self, width=30)
         storeListBox.pack()
+        storeListBox.bind('<<ListboxSelect>>', self.onSelect)
         for store in self.details[4]:
             storeListBox.insert(END, store)
-        ReturnButton = ttk.Button(self, text="Return",
+        ReturnButton = ttk.Button(self, text="Close",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
+
+    def onSelect(self,evt):
+        try:
+            w = evt.widget
+            index = int(w.curselection()[0])
+            value = w.get(index)
+            addwindow = addBasketItemView(self.pid, value[1])
+            addwindow.geometry("120x160")
+            addwindow.mainloop()
+        except:
+            pass
+
+class addBasketItemView(tk.Tk):
+    def __init__(self, pid, sid, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Add to Basket")
+        self.sid = sid
+        self.pid = pid
+        qtyLabel = ttk.Label(self, text="Set Qty:", font=SMALL_FONT)
+        qtyLabel.pack()
+        qtyEntry = ttk.Entry(self, width=10)
+        qtyEntry.delete(0, END)
+        qtyEntry.insert(0, "1")
+        qtyEntry.pack()
+        addButton = ttk.Button(self, text="Add",
+                                  command=lambda: self.addItem(qtyEntry.get()))
+        addButton.pack()
+        cancelButton = ttk.Button(self, text="Cancel",
+                                  command=lambda: self.destroy())
+        cancelButton.pack()
+
+    def addItem(self,qty): #item:[sid, pid, qty]
+        try:
+            global globalUserBasket
+            item = [int(self.sid),self.pid,int(qty)]
+            globalUserBasket.additem(item)
+            print(item)
+            messagebox.showinfo("Item Added","Item has been added")
+            for i in globalUserBasket.getitems():
+                print(i)
+            self.destroy()
+        except:
+            messagebox.showerror("Problem", "Value is invalid")
 
 
 # Registration Page for Regular Users

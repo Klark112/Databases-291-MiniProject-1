@@ -179,11 +179,18 @@ class Basket():
     def additem(self,item):
         self.items.append(item)
 
+    def getitems(self):
+        return self.items
+
     def removeItem(self, item):
         try:
             self.items.remove(item)
         except:
             messagebox.showinfo("", "Item not in the list")
+
+    def clearBasket(self):
+        for i in self.items:
+            i.pop()
 
 class Oline():
     def __init__(self, oID,sID,pID,qty=0,uprice=0):
@@ -393,6 +400,27 @@ class Store():
         self.phone = phone
         self.address = address
 
+    def getStore(self,ID):
+        try:
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("SELECT sid, name, phone, address FROM stores WHERE sid=:sd",
+                      {"sd": ID})
+            result = c.fetchone()
+            self.sid = result[0]
+            self.name = result[1]
+            self.phone = result[2]
+            self.address = result[4]
+            conn.commit()
+            conn.close()
+        except Exception as ex:
+            conn.rollback()
+            conn.commit()
+            conn.close()
+            print("ERROR getting store info")
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
 
 class Agent():
     def __init__(self, aid, name, pwd):
@@ -405,7 +433,7 @@ class Agent():
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("SELECT aid, name, pwd FROM agents WHERE aid=:ad",
-                      { "od": ID})
+                      { "ad": ID})
             result = c.fetchone()
             self.aID = result[0]
             self.name = result[1]

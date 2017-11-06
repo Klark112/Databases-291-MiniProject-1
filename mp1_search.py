@@ -34,7 +34,7 @@ def list_product_details(pid):
         details.append(i)
     # print(details)
     c.execute('''
-             SELECT st.name, ca.uprice, ca.qty, sub.ordernum
+             SELECT st.name, st.sid, ca.uprice, ca.qty, sub.ordernum
              FROM carries ca
              INNER JOIN stores st ON ca.sid = st.sid
              INNER JOIN products pr ON ca.pid = pr.pid
