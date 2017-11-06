@@ -19,45 +19,47 @@ import sqlite3
 from itertools import chain
 DATABASE = 'mp1.db'
 
+
+def list_product_details(pid):
+    details = []
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('''
+              SELECT pr.pid, pr.name, pr.unit, pr.cat
+              FROM products pr
+              WHERE pr.pid = ?
+          ''', (pid,))
+    res = c.fetchone()
+    for i in res:
+        details.append(i)
+    # print(details)
+    c.execute('''
+             SELECT st.name, ca.uprice, ca.qty, sub.ordernum
+             FROM carries ca
+             INNER JOIN stores st ON ca.sid = st.sid
+             INNER JOIN products pr ON ca.pid = pr.pid
+             LEFT OUTER JOIN (SELECT ol.sid as name, COUNT(*) as ordernum
+                        FROM olines ol
+                        INNER JOIN orders od ON ol.oid=od.oid
+                        INNER JOIN products pr ON ol.pid=pr.pid
+                        WHERE pr.pid = ?
+                        and ((od.odate > DATETIME('now', '-7 days'))=1) GROUP BY ol.sid) sub ON ca.sid = sub.name
+             WHERE pr.pid = ?
+             ORDER BY ca.qty=0, ca.uprice ASC
+
+         ''', (pid, pid))
+    res = c.fetchall()
+    details.append(res)
+    # print(details)
+    return details
+    conn.commit()
+    conn.close()
+
+
 class Search_products():
     def __init__(self, key_terms):
         self.key_terms = key_terms
         self.results = self.search_Items(key_terms)
-
-    def list_product_details(self, pid):
-        details = []
-        conn = sqlite3.connect(DATABASE)
-        c = conn.cursor()
-        c.execute('''
-                  SELECT pr.pid, pr.name, pr.unit, pr.cat
-                  FROM products pr
-                  WHERE pr.pid = ?
-              ''',(pid,))
-        res = c.fetchone()
-        for i in res:
-            details.append(i)
-        print(details)
-        c.execute('''
-                 SELECT st.name, ca.uprice, ca.qty, sub.ordernum
-                 FROM carries ca
-                 INNER JOIN stores st ON ca.sid = st.sid
-                 INNER JOIN products pr ON ca.pid = pr.pid
-                 INNER JOIN (SELECT ol.sid as name, COUNT(*) as ordernum
-                            FROM olines ol
-                            INNER JOIN orders od ON ol.oid=od.oid
-                            INNER JOIN products pr ON ol.pid=pr.pid
-                            WHERE pr.pid = ?
-                            and ((od.odate > DATETIME('now', '-7 days'))=1) GROUP BY ol.sid) sub ON ca.sid = sub.name
-                 WHERE pr.pid = ?
-                 ORDER BY ca.qty DESC, ca.uprice ASC
-                 
-             ''', (pid,pid))
-        res = c.fetchall()
-        details.append(res)
-        print(details)
-
-        conn.commit()
-        conn.close()
 
     def list_details(self, result_item):
        # for search_term in search_terms_list:
@@ -144,15 +146,15 @@ class Search_products():
         for i in self.results:
             det = self.list_details(i)
             formDet = [det[0],["Name: "+det[1],"Unit: "+det[2],"# Stores: "+str(det[3]),"Min Price: $"+str(det[4]),"# Stores in Stock: "+str(det[5]),"Min Price (in Stock): $"+str(det[6]),"# Orders: "+str(det[7])]]
-            print(det)
+            # print(det)
             result_list.append(formDet)
         return result_list
 
 
 #if __name__ == "__main__":
-   # newsearch = Search_products('Walmart milk cat 4 1 food')
-    # for i in newsearch.results:
-    #   print(i)
+#    res = list_product_details("p1")
+#    for i in res:
+#       print(i)
 
    # res = newsearch.getFormattedResultList()
    # for i in res:

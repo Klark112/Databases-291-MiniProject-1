@@ -129,7 +129,7 @@ class searchProducts(tk.Frame):
         # print(termString)
         searchResult = Search_products(termString)
         result_window = SearchResultWindow(termString, searchResult.getFormattedResultList())
-        result_window.geometry("480x480")
+        result_window.geometry("800x270")
         result_window.mainloop()
 
 
@@ -141,9 +141,9 @@ class SearchResultWindow(tk.Tk):
         tk.Tk.wm_title(self, "Search Results")
         label = ttk.Label(self, text="Search Results", font=LARGE_FONT)
         label.pack(side="top")
-        label = ttk.Label(self, text="Searched: '"+termString+"'", font=SMALL_FONT)
-        label.pack(side="top")
-        self.resListBox = Listbox(self, width=80,height=5, selectmode=EXTENDED)
+        label2 = ttk.Label(self, text="Searched: '"+termString+"'", font=SMALL_FONT)
+        label2.pack(side="top")
+        self.resListBox = Listbox(self, width=120,height=5, selectmode=EXTENDED)
         self.resListBox.pack()
         self.resListBox.bind('<<ListboxSelect>>',self.onSelect)
         for i in range(self.start_index,self.start_index+5):
@@ -179,7 +179,33 @@ class SearchResultWindow(tk.Tk):
         w = evt.widget
         index = int(w.curselection()[0])
         value = w.get(index)
-        print('You selected item %d: "%s"' % (index, value))
+        detail_window = DetailWindow(value[0])
+        detail_window.geometry("320x480")
+        detail_window.mainloop()
+
+class DetailWindow(tk.Tk):
+    def __init__(self, pid, *args, **kwargs):
+        self.pid = pid
+        self.details = list_product_details(pid)
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Product ID: "+pid+" Details")
+        titlelabel = ttk.Label(self, text="Product ID: "+pid+" Details", font=LARGE_FONT)
+        titlelabel.pack()
+        namelabel = ttk.Label(self, text="Product Name: " + self.details[1], font=SMALL_FONT)
+        namelabel.pack()
+        unitlabel = ttk.Label(self, text="Unit: " + self.details[2], font=SMALL_FONT)
+        unitlabel.pack()
+        catlabel = ttk.Label(self, text="Category: " + self.details[3], font=SMALL_FONT)
+        catlabel.pack()
+        storeListLabel = ttk.Label(self, text="\nList of Stores:(Name/Price/Qty/# of Orders) ", font=SMALL_FONT)
+        storeListLabel.pack()
+        storeListBox = Listbox(self, width=30, selectmode=EXTENDED)
+        storeListBox.pack()
+        for store in self.details[4]:
+            storeListBox.insert(END, store)
+        ReturnButton = ttk.Button(self, text="Return",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
 
 
 # Registration Page for Regular Users
