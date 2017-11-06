@@ -225,7 +225,7 @@ def processOrder(basketItemList, userID):   #Function handles the data changes
         print(message)
 
 
-def list_objects(username):
+def list_orders(username):
     DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
@@ -261,23 +261,22 @@ def list_objects(username):
     #print(list2)
     return list2
 
-
-#def show_details(username, order_id):  # get oid from list_objects[0]
-    #DATABASE = mp1_globals.__DBNAME__
-    #conn = sqlite3.connect(DATABASE)
-    #c = conn.cursor()
-    #c.execute('''
-   #SELECT de.trackingno, de.pickUpTime, de.dropOffTime, od.address
-   #FROM deliveries de, orders od
-   #WHERE de.oid=od.oid and od.cid=:un and od.oid=:oi
-   #''', {"un": username, "oi": order_id})
-    #list_delivery = c.fetchall()
-    #c.execute('''
-   #SELECT ol.sid, st.name, ol.pid, pr.name, ol.qty, pr.unit ,ol.uprice
-   #FROM olines ol, stores st, products pr
-   #WHERE ol.sid=st.sid and ol.pid=pr.pid and ol.oid=:oi''', {"oi": order_id})
-    #list_details = c.fetchall()
-    #list_delivery.append(list_details)
-    #conn.commit()
-    #conn.close()
-    #return list_delivery
+def show_details(username, order_id):  # get oid from list_objects[0]
+    DATABASE = mp1_globals.__DBNAME__
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('''
+   SELECT de.trackingno, de.pickUpTime, de.dropOffTime, od.address
+   FROM deliveries de, orders od
+   WHERE de.oid=od.oid and od.cid=:un and od.oid=:oi
+   ''', {"un": username, "oi": order_id})
+    list_delivery = c.fetchall()
+    c.execute('''
+   SELECT ol.sid, st.name, ol.pid, pr.name, ol.qty, pr.unit ,ol.uprice
+   FROM olines ol, stores st, products pr
+   WHERE ol.sid=st.sid and ol.pid=pr.pid and ol.oid=:oi''', {"oi": order_id})
+    list_details = c.fetchall()
+    list_delivery.append(list_details)
+    conn.commit()
+    conn.close()
+    return list_delivery

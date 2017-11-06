@@ -33,7 +33,7 @@ class MiniProjectapp(tk.Tk):
         self.frames = {}
         # List of all pages 
         frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock, placeOrder,
-                      searchProducts, ShowDetailsPage, ListOrderPage]
+                      searchProducts]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -107,22 +107,17 @@ class UserDashBoard(tk.Frame):
                              command=lambda: controller.show_frame(placeOrder))
         Button2.pack()
         Button3 = ttk.Button(self, text="List Orders",
-                             command=lambda: controller.show_frame(ListOrderPage))
+                             command=lambda: self.ListOrders())
         Button3.pack()
-
-        viewBasketButton = ttk.Button(self, text="View Basket",
-                             command=lambda: self.displayBasket())
-        viewBasketButton.pack()
 
         logoutButton = ttk.Button(self, text="Logout",
                              command=lambda: self.logout(controller))
         logoutButton.pack()
 
     def ListOrders(self):
-        return
-
-    def displayBasket(self):
-        return
+        list_order_window = ListOrderPage()
+        list_order_window.geometry("270x320")
+        list_order_window.mainloop()
 
     def logout(self,controller):
         global __USERBASKET__
@@ -668,64 +663,86 @@ class UpdateBasketItemWIndow(tk.Tk):
         self.destroy()
 
 
-class ShowDetailsPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-
-
-class ListOrderPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+class ListOrderPage(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
         label = ttk.Label(self, text="Your Orders", font=LARGE_FONT)
         label.pack(side="top")
-        #list_of_orders = []
-        #list_of_orders = lambda:list_objects(mp1_globals.__USERID__)
-        #print(list_of_orders)
-        
-        trigger = ttk.Button(self, text="Trigger",command=lambda: self.printListOrders(controller, list_objects(mp1_globals.__USERID__)))
-        trigger.pack(side=BOTTOM)        
-        
-    def printListOrders(self, controller, list_of_orders):
-        #print(list_of_orders)
-        #print("~~~~~")
-    
-        list_five_counter = 0  # need to pass this with each call
-        for i in list_of_orders[(list_five_counter * 5):min(len(list_of_orders), ((list_five_counter * 5) + 5))]:
-            oidLabel = ttk.Label(self, text=str(i[0]))
-            odateLabel = ttk.Label(self, text=str(i[1]))
-            num_items_Label = ttk.Label(self, text=str(i[2]))
-            total_cost_Label = ttk.Label(self, text=str(i[3]))
-            detail_button = ttk.Button(self, text="Show Details",
-                                       command=lambda: controller.show_frame(ShowDetailsPage))
+        self.result_list = list_orders(mp1_globals.__USERID__)
+        self.start_index = 0
+        self.resListBox = Listbox(self, width=120, height=5, selectmode=EXTENDED)
+        self.resListBox.pack()
+        self.resListBox.bind('<<ListboxSelect>>', self.onSelect)
+        for i in range(self.start_index, self.start_index + 5):
+            try:
+                item = self.result_list[i]
+                self.resListBox.insert(END, item)
+            except:
+                pass
+        if (len(self.result_list) > 5):
+            nextButton = ttk.Button(self, text="Next", command=lambda: self.updateIndecies(5))
+            nextButton.pack()
+            prevButton = ttk.Button(self, text="Prev", command=lambda: self.updateIndecies(-5))
+            prevButton.pack()
 
-            
-            oidLabel.pack()
-            odateLabel.pack()
-            num_items_Label.pack()
-            total_cost_Label.pack()
-            detail_button.pack()
-            
+        ReturnButton = ttk.Button(self, text="Close",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
 
-            #grid_row = list_of_orders.index(i)
-            #oidLabel.grid(row=grid_row, column=0)
-            #odateLabel.grid(row=grid_row, column=1)
-            #num_items_Label.grid(row=grid_row, column=2)
-            #total_cost_Label.grid(row=grid_row, column=3)
-            #detail_button.grid(row=grid_row, column=4)
+    def updateIndecies(self, d_i):
+        cur_index = self.start_index
+        self.start_index += d_i
+        if (self.start_index > len(self.result_list) or self.start_index < 0):
+            self.start_index = cur_index
+        self.resListBox.delete(0, END)
+        for i in range(self.start_index, self.start_index + 5):
+            try:
+                item = [self.result_list[i][0], self.result_list[i][1]]
+                self.resListBox.insert(END, item)
+            except:
+                pass
 
-        if (list_five_counter > 0):
-            prev_five_button = ttk.Button(self, text="Prev. 5",
-                                          command=lambda: controller.show_frame(ListOrderPage, (list_five_counter - 1)))
-            prev_five_button.pack(side=BOTTOM)
+    def onSelect(self, evt):
+        try:
+            w = evt.widget
+            index = int(w.curselection()[0])
+            value = w.get(index)
+            print(value)
+            detail_window = OrderDetailWindow(value)
+            detail_window.geometry("320x720")
+            detail_window.mainloop()
+        except:
+            pass
 
-        if ((list_five_counter * 5) < len(list_of_orders)):
-            next_five_button = ttk.Button(self, text="Next. 5",
-                                          command=lambda: controller.show_frame(ListOrderPage, (list_five_counter + 1)))
-            next_five_button.pack(side=BOTTOM)
+class OrderDetailWindow(tk.Tk):
+    def __init__(self, input, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Order details")
+        self.input = input
+        self.oid = input[0]
+        self.details = show_details(mp1_globals.__USERID__,input[0])
+        print(self.oid)
+        titlelabel = ttk.Label(self, text="Order #"+str(input[0])+" Details", font=LARGE_FONT)
+        titlelabel.pack()
 
-        back_button = ttk.Button(self, text="Return",
-                                 command=lambda: controller.show_frame(UserDashBoard))
-        back_button.pack(side=BOTTOM)
+        delLabel = ttk.Label(self, text="Deliver Info:", font=LARGE_FONT)       #[Tracking no., pickuptime, drop off, address,[list of olines in order]]
+        delLabel.pack()
+        tno = ttk.Label(self, text="Tracking #: "+str(self.details[0]), font=SMALL_FONT)  # Tracking no. pickuptime, drop off, address
+        tno.pack()
+        pt = ttk.Label(self, text="Pick up time: " + str(self.details[1]),
+                        font=SMALL_FONT)
+        pt.pack()
+        dt = ttk.Label(self, text="Drop offtime: " + str(self.details[2]),
+                       font=SMALL_FONT)
+        dt.pack()
+        ad = ttk.Label(self, text="Address: " + str(self.details[3]),
+                       font=SMALL_FONT)
+        ad.pack()
 
-    #def increment_qty(self, list_five_counter):
-        #return 0
+        #List of attached olines to this oid
+
+
+        ReturnButton = ttk.Button(self, text="Close",
+                                  command=lambda: self.destroy())
+        ReturnButton.pack()
+
