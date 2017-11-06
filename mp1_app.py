@@ -8,13 +8,11 @@ from tkinter import *
 from mp1 import *
 from mp1_models import *
 from mp1_search import *
-from ttkcal import *
+import mp1_globals
 
 LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
 
-global globalUserID
-global globalUserBasket
 
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -395,34 +393,34 @@ class UpdateDeliveryWIndow(tk.Tk):
         selDelButton.pack()
 
 
-        ReturnButton = ttk.Button(self, text="Return",
+        ReturnButton = ttk.Button(self, text="Close",
                                   command=lambda: self.destroy())
         ReturnButton.pack()
 
     def GetDelivery(self, ID):
-        self.curDelivery.getDelivery(ID)
+        if(self.curDelivery.getDelivery(ID)):
+            delnumlabel = ttk.Label(self, text="Delivery No. " + str(self.curDelivery.getTrackingNum()), font=SMALL_FONT)
+            delnumlabel.pack()
+            ol = StringVar(self, value=','.join(map(str, self.curDelivery.orders)))
+            orderLabel = ttk.Label(self, text="Change Orders:", font=SMALL_FONT)
+            orderLabel.pack()
+            orderList = Entry(self, textvariable=ol)
+            orderList.pack()
+            pdl = StringVar(self, value=self.curDelivery.pickUpTime)
+            pickupDateLabel = ttk.Label(self, text="Change Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
+            pickupDateLabel.pack()
+            pickDateInp = Entry(self, width=20, textvariable=pdl)
+            pickDateInp.pack()
+            ddl = StringVar(self, value=self.curDelivery.dropOffTime)
+            dropupDateLabel = ttk.Label(self, text="Add Drop-Off Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
+            dropupDateLabel.pack()
+            dropDateInp = Entry(self, width=20, textvariable=ddl)
+            dropDateInp.pack()
 
-        delnumlabel = ttk.Label(self, text="Delivery No. " + str(self.curDelivery.getTrackingNum()), font=SMALL_FONT)
-        delnumlabel.pack()
-        ol = StringVar(self, value=','.join(map(str, self.curDelivery.orders)))
-        orderLabel = ttk.Label(self, text="Change Orders:", font=SMALL_FONT)
-        orderLabel.pack()
-        orderList = Entry(self, textvariable=ol)
-        orderList.pack()
-        pdl = StringVar(self, value=self.curDelivery.pickUpTime)
-        pickupDateLabel = ttk.Label(self, text="Change Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
-        pickupDateLabel.pack()
-        pickDateInp = Entry(self, width=20, textvariable=pdl)
-        pickDateInp.pack()
-        ddl = StringVar(self, value=self.curDelivery.dropOffTime)
-        dropupDateLabel = ttk.Label(self, text="Add Drop-Off Date[YYYY-MM-DD hh:mm]:", font=SMALL_FONT)
-        dropupDateLabel.pack()
-        dropDateInp = Entry(self, width=20, textvariable=ddl)
-        dropDateInp.pack()
+            UpdateDeliveryButton = ttk.Button(self, text="Update",
+                                              command=lambda: self.updateDelivery(orderList.get(),pickDateInp.get(),dropDateInp.get()))
+            UpdateDeliveryButton.pack()
 
-        UpdateDeliveryButton = ttk.Button(self, text="Update",
-                                          command=lambda: self.updateDelivery(orderList.get(),pickDateInp.get(),dropDateInp.get()))
-        UpdateDeliveryButton.pack()
 
     def updateDelivery(self,nOrders, npDate, ndDate):
         self.curDelivery.removeDelivery(self.curDelivery.trackingNum)   # remove any rows with the delivery tracking num
@@ -542,9 +540,6 @@ class placeOrder(tk.Frame):
         checkQuantity.pack()        
 
         
-if __name__ == "__main__":
-    app = MiniProjectapp()
-    app.geometry("270x480")
-    app.mainloop()
+
 
 

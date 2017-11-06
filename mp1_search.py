@@ -14,13 +14,11 @@ from collections import defaultdict
 #The input I use to test this function is: 4l milk
 #
 import sqlite3
-
-
+import mp1_globals
 from itertools import chain
-DATABASE = 'mp1.db'
-
 
 def list_product_details(pid):
+    DATABASE = mp1_globals.__DBNAME__
     details = []
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
@@ -65,6 +63,7 @@ class Search_products():
        # for search_term in search_terms_list:
        #      for names in flat_list:
        # print(result_item)
+        DATABASE = mp1_globals.__DBNAME__
         product_info = []
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -120,6 +119,7 @@ class Search_products():
         return(product_info)
 
     def search_Items(self, search_terms):   # Searches for all matches for each word inside a single input String
+        DATABASE = mp1_globals.__DBNAME__
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
 

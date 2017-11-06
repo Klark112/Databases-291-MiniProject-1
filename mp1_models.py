@@ -9,11 +9,15 @@ from mp1 import *
 import uuid
 import datetime
 
-DATABASE = 'mp1.db'
+import mp1_globals
+
 ########################################################################################################################
 # FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # General back-end function to return # of rows in a table
+'''
 def getTableSize(table):
+    DATABASE = mp1_globals.__DBNAME__
+    print(DATABASE)
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     query = {'deliveries':" SELECT COUNT(*) FROM deliveries",
@@ -31,6 +35,7 @@ def getTableSize(table):
     conn.commit()
     conn.close()
     return result[0]
+'''
 
 
 ########################################################################################################################
@@ -58,6 +63,7 @@ class Delivery():
 
     def addOrders(self, newOrders): # add set of oids to the delivery orders and add new rows to the database
         self.orders += newOrders
+        DATABASE = mp1_globals.__DBNAME__
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
         for oid in newOrders:
@@ -75,6 +81,7 @@ class Delivery():
         try:
             if self.trackingNum not in self.trackingNumList:
                 self.trackingNumList.append(self.trackingNum)
+                DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             for oid in self.orders:
@@ -93,6 +100,7 @@ class Delivery():
 
     def updateTimes(self, trackingNum, oID, pickUpTime, dropOffTime):   #Updates pickUp
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("UPDATE deliveries SET pickUpTime = :pt, dropOffTime = :dt WHERE trackingNo = :tn AND oID = :id",
@@ -110,6 +118,7 @@ class Delivery():
 
     def getDelivery(self, trackingNum):  # Function retrieves data related to trackingNum
         try:
+            DATABASE = mp1_globals.__DBNAME__
             self.trackingNum = trackingNum
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
@@ -126,18 +135,21 @@ class Delivery():
             self.orders = orderlist
             conn.commit()
             conn.close()
+            return True
 
         except Exception as ex: #TODO: Print message saying trackingNum does not exist
             conn.rollback()
             conn.commit()
             conn.close()
-            print("ERROR getting deliveries")
+            messagebox.showinfo("Invalid Number", "Delivery No. does not exist")
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             print(message)
+            return False
 
     def removeDelivery(self,trackNum):
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("DELETE FROM deliveries WHERE trackingNo = :tn",
@@ -156,6 +168,7 @@ class Delivery():
     def removeOrder(self,oID):
         try:
             self.orders.remove(oID)
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("DELETE FROM deliveries WHERE trackingNo = :tn AND oid = :id",
@@ -194,15 +207,18 @@ class Basket():
 
 class Oline():
     def __init__(self, oID,sID,pID,qty=0,uprice=0):
-        self.oID = oID
+        self.oID = lambda:self.generateoID()
         self.sID = sID
         self.pID = pID
         self.qty = qty
         self.uprice = uprice
+    def generateoID(self):
+        return
 
     def updateUprice(self, value):
         try:
             self.uprice = value
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("UPDATE onlines SET uprice = :up WHERE oid = :od AND pid = :pd AND sid = :sd",
@@ -221,6 +237,7 @@ class Oline():
     def updateQty(self, value):
         try:
             self.uprice = value
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("UPDATE onlines SET qty = :vl WHERE oid = :od AND pid = :pd AND sid = :sd",
@@ -238,6 +255,7 @@ class Oline():
 
     def getOlineInfo(self,oid,pid,sid):
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("SELECT oid, sid, pid, qty, uprice FROM olines WHERE oid=:od AND sid=:sd AND pID =:pd",
@@ -261,6 +279,7 @@ class Oline():
 
     def saveOlineInfo(self):
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("""INSERT INTO olines(oid, sid, pid, qty, uprice) VALUES(?, ?, ?, ?, ?) """,
@@ -278,6 +297,7 @@ class Oline():
 
     def removeOline(self, oid, sid, pid):
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("DELETE FROM olines WHERE oid=:od AND sid=:sd AND pID =:pd",
@@ -301,15 +321,15 @@ class Oline():
 
 
 class Order(): # oid, cid, odate, address
-    __ID = getTableSize("orders") + 1
-    def __init(self,cid,address):
-        self.oID = self.__ID
+    def __init(self,oid,cid,address):
+        self.oID = oid
         self.cID = cid
         self.address = address
         self.date = datetime.now()
 
     def saveOrder(self): #TODO: Error where order id may not be unique --> Make recursive call to saveorder with orderId +1
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("""INSERT INTO orders(oid, cid, address, odate) VALUES(?, ?, ?, ?) """,
@@ -327,6 +347,7 @@ class Order(): # oid, cid, odate, address
 
     def getOrderInfo(self, ID):   # Update all self values to match the one from the database and return OID
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("SELECT oid, cid, address, odate FROM orders WHERE oid = :id", {"id": ID})
@@ -349,6 +370,7 @@ class Order(): # oid, cid, odate, address
 
     def updateAddress(self, newAddress):    #Update address of current Order
         self.address = newAddress
+        DATABASE = mp1_globals.__DBNAME__
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
         try:
@@ -402,6 +424,7 @@ class Store():
 
     def getStore(self,ID):
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("SELECT sid, name, phone, address FROM stores WHERE sid=:sd",
@@ -430,6 +453,7 @@ class Agent():
 
     def getAgentInfo(self,ID):
         try:
+            DATABASE = mp1_globals.__DBNAME__
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
             c.execute("SELECT aid, name, pwd FROM agents WHERE aid=:ad",

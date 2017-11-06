@@ -9,11 +9,12 @@ from tkinter import messagebox
 from mp1_app import *
 from mp1_models import *
 
-DATABASE = 'mp1.db'
+import mp1_globals
 # global variable for backend to keep track of user
 
 
 def log_in(username,password): #NOTE: username and password are currently blank
+    DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute(" SELECT cid FROM customers WHERE customers.cid=:un",{"un":username})
@@ -45,6 +46,7 @@ def log_in(username,password): #NOTE: username and password are currently blank
 
 
 def agent_log_in(username, password):
+    DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute(" SELECT aid FROM agents WHERE agents.aid=:un", {"un": username})
@@ -86,6 +88,7 @@ def getUser():
     return USER
 
 def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
+    DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     try:
@@ -107,6 +110,7 @@ def sign_up(cid, name, address,pwd): #customer(cid, name, address, pwd)
         messagebox.showerror("Signup error", message)
 
 def StockCheck(self, sid, pid):
+    DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     
@@ -143,6 +147,7 @@ def StockCheck(self, sid, pid):
             return False    
 
 def StockQTY(sid, pid, qty):
+    DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     
@@ -152,6 +157,7 @@ def StockQTY(sid, pid, qty):
     conn.close()          
     
 def StockPrice(sid, pid, price):
+    DATABASE = mp1_globals.__DBNAME__
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute("""UPDATE carries SET uprice =:pr WHERE sid=:sd AND pid=:pd""",
@@ -160,6 +166,7 @@ def StockPrice(sid, pid, price):
     conn.close()    
     
 def listItems(self, userID, listBasket):
+    DATABASE = mp1_globals.__DBNAME__
     for n in range(len(listBasket)):
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()        
