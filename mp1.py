@@ -177,7 +177,6 @@ def processOrder(basketItemList, userID):   #Function handles the data changes
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     try:
-
         c.execute("""SELECT MAX(oid) FROM orders""")
         conn.commit()
         result = c.fetchall()
@@ -226,144 +225,53 @@ def processOrder(basketItemList, userID):   #Function handles the data changes
         print(message)
 
 
+def list_objects(username):
+    DATABASE = mp1_globals.__DBNAME__
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT ol.oid, od.odate, ol.qty, ol.uprice from olines ol,orders od where ol.oid=od.oid and od.cid=:un",
+              {"un": username})
+    list_oo = c.fetchall()
+    list_total = []
+    list_order_tuple = [0, '', 0, 0]  # order id, order date, the number of products ordered and the total price
+    total_qty = 0
+    current_oid = -1
+    for i in list_oo:
+        if (i[0] != current_oid):
+            list_total.append(list_order_tuple[:])
+            list_order_tuple[0] = i[0]
+            list_order_tuple[1] = i[1]
+            list_order_tuple[2] = 0
+            list_order_tuple[3] = 0
+            current_oid = i[0]
 
-# def listItems(self, userID, listBasket):
-# DATABASE = mp1_globals.__DBNAME__
-# conn = sqlite3.connect(DATABASE)
-# c = conn.cursor()
-# for n in range(len(listBasket)):
-#     #getting the quantity of the products that are; that specific sid and pid
-#     c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
-#               {"sd":listBasket[n][0], "pd":listBasket[n][1]})
-#     conn.commit()
-#     k = []
-#     res = c.fetchone()
-#     #if the qty ordered higher than the one the store has:
-#     if(listBasket[n][2]>res[0]):
-#         i = 1
-#         mylabel = Label(self, text = "Quantity too High.\nChange Quantity or Delete"+"", font = ("Verdana", 8))
-#         mylabel.pack()
-#         k.append(n)
-#         #upInfo = Entry(self)
-#         #upInfo.pack()
-#         #updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, n, upInfo.get()))
-#         #updateButton.pack()
-#         #deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, n))
-#         #deleteButton.pack()
-#     else:
-#         mylabel2 = Label(self, text = "In Process", font = ("Verdana", 8))
-#         mylabel2.pack()
-#         #if(i==0 & n == (len(listBasket)-1)):
-#         #if(n == (len(listBasket)-1)):
-#         #print("Passing to the end")
-#             #finalOrder(self, userID, listBasket)
-#     #n = n + 1
-# contButton = ttk.Button(self, text="Fix Qty", command=lambda: cont(self, listBasket, k, userID))
-# contButton.pack()
-#
-# def cont(self, listBasket, k, userID):
-# #If position [1,3] are incorrect and want to fix there quantity
-# # the for loop just iterates through the list without caring if value was added
-# for t in range(len(k)):
-#     upInfo = Entry(self)
-#     upInfo.pack()
-#     updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, t, upInfo.get(), k))
-#     updateButton.pack()
-#     deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, t, k))
-#     deleteButton.pack()
-# finalizeButton = ttk.Button(self, text="Finish", command=lambda: finalOrder(self, userID, listBasket))
-# finalizeButton.pack()
+        if (i[0] == current_oid):
+            list_order_tuple[2] += i[2]
+            list_order_tuple[3] += i[2] * i[3]
 
-# def finalOrder(self, userID, listBasket):
-#     DATABASE = mp1_globals.__DBNAME__
-#     conn = sqlite3.connect(DATABASE)
-#     c = conn.cursor()
-#     #updating the Carries Table with the values of listBasket
-#     for n in range(len(listBasket)):
-#         c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
-#                   {"qt":listBasket[n][2], "sd":listBasket[n][0], "pd":listBasket[n][1]})
-#         conn.commit()
-#
-#         #Adding to olines
-#         c.execute("""SELECT MAX(oid) FROM olines""")
-#         conn.commit()
-#         result = c.fetchall()
-#
-#         high = result[0]
-#         newOidOlines = high[0]+1
-#
-#         #Getting the uprice for the specific product of specific store
-#         c.execute("""SELECT uprice FROM carries WHERE sid=:si AND pid=:pi""",
-#                   {"si":listBasket[n][0], "pi":listBasket[n][1]})
-#         res = c.fetchall()
-#
-#         #Inserting into olines these products to be ordered
-#         c.execute("""INSERT INTO olines VALUES (:od, :sd, :pd, :qy, :upr)""",
-#                   {"od":newOidOlines, "sd":listBasket[n][0], "pd":listBasket[n][1], "qy":listBasket[n][2], "upr":res[0][0]})
-#
-#     #creating a new order for all these products
-#     c.execute("""SELECT MAX(oid) FROM orders""")
-#     conn.commit()
-#     result = c.fetchall()
-#     high = result[0]
-#     newOid = high[0] + 1
-#
-#
-#     #for getting the users address
-#     c.execute("""SELECT c1.address FROM customers c1 WHERE c1.cid =:useID""",{"useID":userID})
-#     conn.commit()
-#     resultAddress2 = c.fetchone()
-#
-#     #for creating the dates
-#     dates2 = time.strftime("%Y/%m/%d")
-#
-#     #generating a new order
-#     c.execute("""INSERT INTO orders VALUES (:od, :cd, :date, :adr)""",
-#               {"od":newOid, "cd":userID, "date":dates2, "adr":resultAddress2[0]})
-#     conn.commit()
-#
-#
-#     mylabel = Label(self, text = "Order Placed", font = ("Verdana", 8))
-#     mylabel.pack()
-#def listItems(self, userID, listBasket, n):
-    #conn = sqlite3.connect(DATABASE)
-    #c = conn.cursor()
-    
-    #NextButton = ttk.Button(self, text="NextOrder", command=lambda: itemInList(self, userID,listBasket, n))
-    #NextButton.pack()
-    
-#def itemInList(self, userID, listBasket, n):
-    #conn = sqlite3.connect(DATABASE)
-    #c = conn.cursor()    
-    #if(n<len(listBasket)):
-        ##print(listBasket[n:n+1])
-        #product = listBasket[n:n+1]
-        #c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
-                    #{"sd":product[n][0], "pd":product[n][1]})
-        #conn.commit()
-        #res = c.fetchone()
-        #print(product[0][2])
-        #print(res[0])
-        #if(product[0][2]>res[0]):
-            #mylabel = Label(self, text = "Quantity too High. Enter quantity or del to delete", font = ("Verdana", 8))
-            #mylabel.pack()
-            #upInfo = Entry(self)
-            #upInfo.pack()
-            #if(upInfo.get() != 'del'):
-                #listBasket[n][2] = upInfo.get()
-                #updateButton = ttk.Button(self, text="Update", command=lambda: listItems(self, userID, listBasket, n))
-                #updateButton.pack()                
-                
-            #else:
-                #listBasket.remove(n)
-                #deleteButton = ttk.Button(self, text="Delete", command=lambda: listItems(self, userID, listBasket, n))
-                #deleteButton.pack()                 
-                
-        #else:
-            #mylabel = Label(self, text = "Placed in Order", font = ("Verdana", 8))
-            #mylabel.pack()        
-        
-    #else:
-        #mylabel = Label(self, text = "No more products", font = ("Verdana", 8))
-        #mylabel.pack()
-    #n= n +1
+    list_total.append(list_order_tuple[:])
+
+    conn.commit()
+    conn.close()
+    return list_total[1:]
+
+
+def show_details(username, order_id):  # get oid from list_objects[0]
+    DATABASE = mp1_globals.__DBNAME__
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('''
+   SELECT de.trackingno, de.pickUpTime, de.dropOffTime, od.address
+   FROM deliveries de, orders od
+   WHERE de.oid=od.oid and od.cid=:un and od.oid=:oi
+   ''', {"un": username, "oi": order_id})
+    list_delivery = c.fetchall()
+    c.execute('''
+   SELECT ol.sid, st.name, ol.pid, pr.name, ol.qty, pr.unit ,ol.uprice
+   FROM olines ol, stores st, products pr
+   WHERE ol.sid=st.sid and ol.pid=pr.pid and ol.oid=:oi''', {"oi": order_id})
+    list_details = c.fetchall()
+    list_delivery.append(list_details)
+    conn.commit()
+    conn.close()
+    return list_delivery

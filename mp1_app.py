@@ -32,7 +32,8 @@ class MiniProjectapp(tk.Tk):
 
         self.frames = {}
         # List of all pages 
-        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock, placeOrder, searchProducts]
+        frame_list = [StartPage, UserDashBoard, Register, AgentLogin, AgentDashBoard, Stock, placeOrder,
+                      searchProducts, ShowDetailsPage, ListOrderPage]
         for F in frame_list:
             frame = F(container, self)
             self.frames[F] = frame
@@ -106,7 +107,7 @@ class UserDashBoard(tk.Frame):
                              command=lambda: controller.show_frame(placeOrder))
         Button2.pack()
         Button3 = ttk.Button(self, text="List Orders",
-                             command=lambda: self.ListOrders())
+                             command=lambda: controller.show_frame(ListOrderPage))
         Button3.pack()
 
         viewBasketButton = ttk.Button(self, text="View Basket",
@@ -662,3 +663,49 @@ class UpdateBasketItemWIndow(tk.Tk):
             print(message)
 
         self.destroy()
+
+
+class ShowDetailsPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+
+class ListOrderPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = ttk.Label(self, text="Your Orders", font=LARGE_FONT)
+        label.pack(side="top")
+        user = globalUserID
+        list_of_orders = list_objects(user)
+        list_five_counter = 0  # need to pass this with each call
+        for i in list_of_orders[(list_five_counter * 5):min(len(list_of_orders), ((list_five_counter * 5) + 5))]:
+            oidLabel = ttk.Label(self, text=str(i[0]))
+            odateLabel = ttk.Label(self, text=str(i[1]))
+            num_items_Label = ttk.Label(self, text=str(i[2]))
+            total_cost_Label = ttk.Label(self, text=str(i[3]))
+            detail_button = ttk.Button(self, text="Show Details",
+                                       command=lambda: controller.show_frame(ShowDetailsPage))
+
+            grid_row = list_of_orders.index(i)
+            oidLabel.grid(row=grid_row, column=0)
+            odateLabel.grid(row=grid_row, column=1)
+            num_items_Label.grid(row=grid_row, column=2)
+            total_cost_Label.grid(row=grid_row, column=3)
+            detail_button.grid(row=grid_row, column=4)
+
+        if (list_five_counter > 0):
+            prev_five_button = ttk.Button(self, text="Prev. 5",
+                                          command=lambda: controller.show_frame(ListOrderPage, (list_five_counter - 1)))
+            prev_five_button.pack(side=BOTTOM)
+
+        if ((list_five_counter * 5) < len(list_of_orders)):
+            next_five_button = ttk.Button(self, text="Next. 5",
+                                          command=lambda: controller.show_frame(ListOrderPage, (list_five_counter + 1)))
+            next_five_button.pack(side=BOTTOM)
+
+        back_button = ttk.Button(self, text="Next. 5",
+                                 command=lambda: controller.show_frame(UserDashBoard))
+        back_button.pack(side=BOTTOM)
+
+    def increment_qty(self, list_five_counter):
+        return 0
