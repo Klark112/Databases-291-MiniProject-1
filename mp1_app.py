@@ -15,7 +15,7 @@ LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
 
 
-globalUserID = ""
+
 n = 0
 __USERBASKET__ = None
 
@@ -83,8 +83,8 @@ class StartPage(tk.Frame):
         if re.match("^[A-Za-z0-9_]*$", username) and re.match("^[A-Za-z0-9_]*$", password):
             if(log_in(username, password) == True):
                 controller.show_frame(UserDashBoard)
-                global globalUserID
-                globalUserID = username
+                mp1_globals.initUSER(username)
+                print(mp1_globals.__USERID__)
                 global __USERBASKET__
                 __USERBASKET__ = Basket()
         else:
@@ -127,6 +127,9 @@ class UserDashBoard(tk.Frame):
     def logout(self,controller):
         global __USERBASKET__
         __USERBASKET__.clearBasket()
+
+        mp1_globals.__USERID__ = None
+
         controller.show_frame(StartPage)
 
 class searchProducts(tk.Frame):
@@ -560,7 +563,7 @@ class placeOrder(tk.Frame):
 class orderSetUp(tk.Tk): #New Window to set up order
     def __init__(self, *args, **kwargs):
         self.basket = __USERBASKET__
-        self.uid = globalUserID
+        self.uid = mp1_globals.__USERID__
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Tk.wm_title(self, "Setup Order")
         label = ttk.Label(self, text="Order Items", font=LARGE_FONT)
@@ -607,7 +610,7 @@ class orderSetUp(tk.Tk): #New Window to set up order
     def confirmOrder(self): # Function is called whenever the items in the user basket are all okay
         global __USERBASKET__
         process_basket = __USERBASKET__
-        processOrder(process_basket.getitems(), globalUserID)
+        processOrder(process_basket.getitems(), mp1_globals.__USERID__)
         __USERBASKET__.clearBasket()
 
 
@@ -675,8 +678,8 @@ class ListOrderPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="Your Orders", font=LARGE_FONT)
         label.pack(side="top")
-        user = globalUserID
-        list_of_orders = list_objects(user)
+
+        list_of_orders = list_objects(mp1_globals.__USERID__)
         list_five_counter = 0  # need to pass this with each call
         for i in list_of_orders[(list_five_counter * 5):min(len(list_of_orders), ((list_five_counter * 5) + 5))]:
             oidLabel = ttk.Label(self, text=str(i[0]))
