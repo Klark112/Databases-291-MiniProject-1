@@ -13,6 +13,7 @@ LARGE_FONT = ("Veranda", 18)
 SMALL_FONT = ("Veranda", 9)
 
 globalUserID = ""
+n = 0
 
 class MiniProjectapp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -357,7 +358,7 @@ class Stock(tk.Frame):
         buttonReturn = ttk.Button(self, text="Return",
                              command=lambda: controller.show_frame(AgentDashBoard))
         buttonReturn.pack()            
-        
+    
     def StockImplement(self, sid, pid):
         #display quantity button
         if(StockCheck(self, sid, pid)==True):
@@ -385,10 +386,10 @@ class placeOrder(tk.Frame):
         basketItem = Label(self, text = "Items in Basket", font = ("Verdana", 12))
         basketItem.pack()
         listBasket = [[1, 'p1', 4],[2, 'p4', 4],[1, 'p1', 5], [1, 'p2', 9]] #sid, pid, qty
-        checkQuantity = ttk.Button(self, text="Check Quantity", command=lambda: listItems(self, globalUserID, listBasket))
-        checkQuantity.pack()        
-
         
+        checkQuantity = ttk.Button(self, text="Check Quantity", command=lambda: listItems(self, globalUserID, listBasket))
+        checkQuantity.pack()
+
 if __name__ == "__main__":
     app = MiniProjectapp()
     app.geometry("270x480")

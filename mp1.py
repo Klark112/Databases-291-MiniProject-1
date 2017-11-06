@@ -115,7 +115,7 @@ def StockCheck(self, sid, pid):
     storeID = c.fetchone()
     
     if(storeID is None):
-        c.execute("SELECT sid FROM carries WHERE sid =:sd",{"sd":sid})
+        c.execute("SELECT sid FROM stores WHERE sid =:sd",{"sd":sid})
         storePIDN = c.fetchone()
         if(storePIDN is None):
             return False                        
@@ -123,13 +123,19 @@ def StockCheck(self, sid, pid):
             conn.commit()
             default = None
             qty = 0
-            mylabel = Label(self, text = "Product not present(Added to store)", font = ("Verdana", 8))
-            mylabel.pack()            
-            c.execute("""INSERT INTO carries VALUES(:sd, :pd, :qty, :def)""",
-                      {"sd":sid, "pd":pid,"qty":qty, "def":default})
-            conn.commit()   
-            conn.close()            
-            return True
+            c.execute("""SELECT pid FROM products WHERE pid=:pd""", {"pd":pid})
+            conn.commit()
+            result2 = c.fetchone()
+            if(result2 is None):
+                return False
+            else:
+                mylabel = Label(self, text = "Product not present(Added to store)", font = ("Verdana", 8))
+                mylabel.pack()            
+                c.execute("""INSERT INTO carries VALUES(:sd, :pd, :qty, :def)""",
+                          {"sd":sid, "pd":pid,"qty":qty, "def":default})
+                conn.commit()   
+                conn.close()            
+                return True
     else:
         if((storeID[0])==int(sid)):
             if(storeID[1] == pid):
@@ -158,58 +164,154 @@ def StockPrice(sid, pid, price):
               {"pr":price, "sd":sid, "pd":pid})
     conn.commit()
     conn.close()    
-    
+
 def listItems(self, userID, listBasket):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
     for n in range(len(listBasket)):
-        conn = sqlite3.connect(DATABASE)
-        c = conn.cursor()        
+        #getting the quantity of the products that are; that specific sid and pid
         c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
-                 {"sd":listBasket[n][0], "pd":listBasket[n][1]})
-        conn.commit()
-        res = c.fetchall()
-        myinfo = None
-        if(listBasket[n][2]>res[0][0]):
-            mylabel = Label(self, text = "Quantity too High.\nChange Quantity or Delete", font = ("Verdana", 8))
+                  {"sd":listBasket[n][0], "pd":listBasket[n][1]})
+        conn.commit()   
+        k = []    
+        res = c.fetchone()
+        #if the qty ordered higher than the one the store has:
+        if(listBasket[n][2]>res[0]):
+            i = 1
+            mylabel = Label(self, text = "Quantity too High.\nChange Quantity or Delete"+"", font = ("Verdana", 8))
             mylabel.pack()
-            upInfo = Entry(self)
-            upInfo.pack()
-            updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, n, upInfo.get()))
-            updateButton.pack()
-            deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, n))
-            deleteButton.pack()            
+            k.append(n)
+            #upInfo = Entry(self)
+            #upInfo.pack()
+            #updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, n, upInfo.get()))
+            #updateButton.pack()   
+            #deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, n))
+            #deleteButton.pack()             
         else:
-            mylabel2 = Label(self, text = "Order Placed", font = ("Verdana", 9))
-            mylabel2.pack()             
-            #update the table after placing an order
-            c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
-                      {"qt":listBasket[n][2], "sd":listBasket[n][0], "pd":listBasket[n][1]})
-            conn.commit()
-            
-    c.execute("""SELECT oid FROM orders""")
+            mylabel2 = Label(self, text = "In Process", font = ("Verdana", 8))
+            mylabel2.pack()
+            #if(i==0 & n == (len(listBasket)-1)):
+            #if(n == (len(listBasket)-1)):
+            #print("Passing to the end")
+                #finalOrder(self, userID, listBasket)
+        #n = n + 1
+    contButton = ttk.Button(self, text="Fix Qty", command=lambda: cont(self, listBasket, k, userID))
+    contButton.pack()                         
+      
+def cont(self, listBasket, k, userID):
+    #If position [1,3] are incorrect and want to fix there quantity
+    # the for loop just iterates through the list without caring if value was added
+    for t in range(len(k)):
+        upInfo = Entry(self).grid(row = 0)
+        upInfo.grid(row=0, column = 1)
+        updateButton = ttk.Button(self, text="Update", command=lambda: updateListBasket(self, userID, listBasket, t, upInfo.get(), k))
+        updateButton.pack()   
+        deleteButton = ttk.Button(self, text="Delete", command=lambda: deleteListBasket(self, userID, listBasket, t, k))
+        deleteButton.pack() 
+    finalizeButton = ttk.Button(self, text="Finish", command=lambda: finalOrder(self, userID, listBasket))
+    finalizeButton.pack()              
+
+def updateListBasket(self, userID, listBasket, n, upInfo, k):
+    listBasket[n][2] = (upInfo)
+    #upinfo.pack
+    cont(self, listBasket, k, userID)
+    
+def deleteListBasket(self, userID, listBasket, n, k):
+    listBasket.remove(n)
+    #upInfo.pack()
+    cont(self, listBasket, k, userID)
+    
+def finalOrder(self, userID, listBasket):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()    
+    #updating the Carries Table with the values of listBasket
+    for n in range(len(listBasket)):
+        c.execute("""UPDATE carries SET qty = qty - :qt WHERE sid=:sd AND pid=:pd""",
+                  {"qt":listBasket[n][2], "sd":listBasket[n][0], "pd":listBasket[n][1]})
+        conn.commit()
+        
+        #Adding to olines
+        c.execute("""SELECT MAX(oid) FROM olines""")
+        conn.commit()
+        result = c.fetchall()
+        
+        high = result[0]
+        newOidOlines = high[0]+1
+        
+        #Getting the uprice for the specific product of specific store
+        c.execute("""SELECT uprice FROM carries WHERE sid=:si AND pid=:pi""",
+                  {"si":listBasket[n][0], "pi":listBasket[n][1]})
+        res = c.fetchall()
+        
+        #Inserting into olines these products to be ordered
+        c.execute("""INSERT INTO olines VALUES (:od, :sd, :pd, :qy, :upr)""", 
+                  {"od":newOidOlines, "sd":listBasket[n][0], "pd":listBasket[n][1], "qy":listBasket[n][2], "upr":res[0][0]})        
+    
+    #creating a new order for all these products
+    c.execute("""SELECT MAX(oid) FROM orders""")
     conn.commit()
-    result = c.fetchall()
-
-    high = result[0]  
-    for each in result:
-        if high < each:
-            high = each
-
+    result = c.fetchall()    
+    high = result[0]
     newOid = high[0] + 1  
+     
+    
     #for getting the users address
     c.execute("""SELECT c1.address FROM customers c1 WHERE c1.cid =:useID""",{"useID":userID})
-    conn.commit()
-    resultAddress = c.fetchone()
+    conn.commit()  
+    resultAddress2 = c.fetchone()
+    
     #for creating the dates
-    dates = time.strftime("%Y/%m/%d")
+    dates2 = time.strftime("%Y/%m/%d")
+    
     #generating a new order
     c.execute("""INSERT INTO orders VALUES (:od, :cd, :date, :adr)""", 
-              {"od":newOid, "cd":userID, "date":dates, "adr":resultAddress[0]})
-    conn.commit()
+              {"od":newOid, "cd":userID, "date":dates2, "adr":resultAddress2[0]})
+    conn.commit()    
     
-def updateListBasket(self, userID, listBasket, n, upInfo):
-    listBasket[n][2] = int(upInfo)
-    listItems(self, userID, listBasket)
     
-def deleteListBasket(self, userID, listBasket, n):
-    listBasket.pop(n)
-    listItems(self, userID, listBasket)
+    mylabel = Label(self, text = "Order Placed", font = ("Verdana", 8))
+    mylabel.pack()             
+  
+   
+#def listItems(self, userID, listBasket, n):
+    #conn = sqlite3.connect(DATABASE)
+    #c = conn.cursor()
+    
+    #NextButton = ttk.Button(self, text="NextOrder", command=lambda: itemInList(self, userID,listBasket, n))
+    #NextButton.pack()
+    
+#def itemInList(self, userID, listBasket, n):
+    #conn = sqlite3.connect(DATABASE)
+    #c = conn.cursor()    
+    #if(n<len(listBasket)):
+        ##print(listBasket[n:n+1])
+        #product = listBasket[n:n+1]
+        #c.execute("""SELECT c1.qty FROM carries c1 WHERE c1.sid =:sd AND c1.pid=:pd""",
+                    #{"sd":product[n][0], "pd":product[n][1]})
+        #conn.commit()
+        #res = c.fetchone()
+        #print(product[0][2])
+        #print(res[0])
+        #if(product[0][2]>res[0]):
+            #mylabel = Label(self, text = "Quantity too High. Enter quantity or del to delete", font = ("Verdana", 8))
+            #mylabel.pack()
+            #upInfo = Entry(self)
+            #upInfo.pack()
+            #if(upInfo.get() != 'del'):
+                #listBasket[n][2] = upInfo.get()
+                #updateButton = ttk.Button(self, text="Update", command=lambda: listItems(self, userID, listBasket, n))
+                #updateButton.pack()                
+                
+            #else:
+                #listBasket.remove(n)
+                #deleteButton = ttk.Button(self, text="Delete", command=lambda: listItems(self, userID, listBasket, n))
+                #deleteButton.pack()                 
+                
+        #else:
+            #mylabel = Label(self, text = "Placed in Order", font = ("Verdana", 8))
+            #mylabel.pack()        
+        
+    #else:
+        #mylabel = Label(self, text = "No more products", font = ("Verdana", 8))
+        #mylabel.pack()
+    #n= n +1
